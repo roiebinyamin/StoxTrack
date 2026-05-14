@@ -1,4 +1,5 @@
 import YahooFinance from "yahoo-finance2"
+import {addTransaction, getTransactions} from "./database.js";
 
 const stockGetter = new YahooFinance({suppressNotices: ['yahooSurvey', 'ripHistorical']});
 
@@ -13,4 +14,4 @@ async function getRangeStockPrice(stockName: string, startDate : Date, endDate :
     return stock.map(x => ({ close: x.close, date: x.date}));
 }
 
-console.log(await getRangeStockPrice("AAPL", new Date("2026-05-12"), new Date("2026-05-12")));
+console.log(getTransactions());
