@@ -7,3 +7,10 @@ export async function buyStock(stockSymbol: string, boughtAmount: number, bought
         throw new Error("No price found");
     addTransaction(stockSymbol, boughtAmount, boughtDate, boughtPrice[0].close)
 }
+
+export async function sellUserStock(stockSymbol: string, amountSold: number, soldDate: string){
+    const soldPrice = await getRangeStockPrice(stockSymbol, new Date(soldDate), new Date(soldDate));
+    if (!soldPrice[0])
+        throw new Error("No price found");
+    sellStock(stockSymbol, amountSold, soldDate,soldPrice[0].close )
+}
