@@ -12,3 +12,7 @@ export async function getRangeStockPrice(stockSymbol: string, startDate : Date, 
     const stock = await stockGetter.historical(stockSymbol, {period1: startDate, period2: realEndDate})
     return stock.map(x => ({ close: x.close, date: x.date}));
 }
+
+export async function getDayStockPrice(stockSymbol: string, date: Date) {
+    return getRangeStockPrice(stockSymbol, date, date)
+}
