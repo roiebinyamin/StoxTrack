@@ -1,7 +1,7 @@
 import Database from "better-sqlite3";
 
 const database = new Database("stoxTrack.db");
-interface Transaction {
+export interface Transaction {
     id: number;
     stockSymbol: string;
     currentAmount: number;
@@ -32,7 +32,7 @@ export function addTransaction(stockSymbol: string, boughtAmount: number, bought
 }
 
 export function getTransactions(){
-    return database.prepare(`SELECT * FROM transactions`).all();
+    return database.prepare(`SELECT * FROM transactions`).all() as Transaction[];
 }
 
 export function sellStock(stockSymbol: string, amountSold: number , soldDate: string, soldPrice: number) {
