@@ -1,5 +1,5 @@
 import YahooFinance from "yahoo-finance2"
-import {addTransaction, getTransactions, sellStock, updateTransaction} from "./database.js";
+import {addTransaction, getTransactions, sellStock, updateTransaction, deleteTransaction} from "./database.js";
 
 const stockGetter = new YahooFinance({suppressNotices: ['yahooSurvey', 'ripHistorical']});
 
@@ -14,7 +14,7 @@ async function getRangeStockPrice(stockName: string, startDate : Date, endDate :
     return stock.map(x => ({ close: x.close, date: x.date}));
 }
 
-updateTransaction(2, 120, "2024-01-01", 100)
+addTransaction("AAPL", 100, "2023-01-01", 100);
 
 // const investment = getTransactions();
 // console.log(await getRangeStockPrice(investment[0].stockSymbol, investment[0].boughtDate, new Date()));

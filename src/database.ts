@@ -60,3 +60,7 @@ export function updateTransaction(id: number, boughtAmount: number, boughtDate: 
     const amountSold = row.amountSold;
     database.prepare(`UPDATE transactions SET boughtAmount = ?, currentAmount = ?, boughtDate = ?, boughtPrice = ? WHERE id = ?`).run(boughtAmount, boughtAmount- amountSold, boughtDate, boughtPrice, id);
 }
+
+export function deleteTransaction(id: number){
+    database.prepare(`DELETE FROM transactions WHERE id = ?`).run(id);
+}
