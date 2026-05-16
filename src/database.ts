@@ -64,3 +64,7 @@ export function updateTransaction(id: number, boughtAmount: number, boughtDate: 
 export function deleteTransaction(id: number){
     database.prepare(`DELETE FROM transactions WHERE id = ?`).run(id);
 }
+
+export function getTransactionById(id: number){
+    return database.prepare(`SELECT * FROM transactions WHERE id = ?`).get(id) as Transaction
+}
