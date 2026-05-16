@@ -8,11 +8,16 @@ export async function buyStock(stockSymbol: string, boughtAmount: number, bought
     addTransaction(stockSymbol, boughtAmount, boughtDate, boughtPrice.close)
 }
 
-export async function sellUserStock(stockSymbol: string, amountSold: number, soldDate: string){
-    const soldPrice = await getDayStockPrice(stockSymbol, new Date(soldDate));
-    if (!soldPrice)
+export async function sellUserStock(stockSymbol: string, amountSold: number, soldDate: string) {
+    try {
+        const soldPrice = await getDayStockPrice(stockSymbol, new Date(soldDate));
+        if (!soldPrice)
         throw new Error("No price found");
-    sellStock(stockSymbol, amountSold, soldDate,soldPrice.close )
+        sellStock(stockSymbol, amountSold, soldDate, soldPrice.close)
+    }
+    catch (error) {
+        console.log("User doesn't have enough shares!")
+    }
 }
 
 export async function getPortfolio(){
