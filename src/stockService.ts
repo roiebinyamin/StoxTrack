@@ -14,5 +14,6 @@ export async function getRangeStockPrice(stockSymbol: string, startDate : Date, 
 }
 
 export async function getDayStockPrice(stockSymbol: string, date: Date) {
-    return getRangeStockPrice(stockSymbol, date, date)
+    const prices = await getRangeStockPrice(stockSymbol, new Date(date.getTime() - 5 * 1000 * 60 * 60 * 24) , date)
+    return prices[prices.length -1];
 }
