@@ -1,3 +1,3 @@
 import {buyStock, sellUserStock, getPortfolio, updateUserStock , deleteUserStock} from "./portfolio.js";
 
-deleteUserStock(22)
+buyStock("TA35.TA", 1, "2026-01-01")
