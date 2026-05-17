@@ -50,6 +50,6 @@ app.get('/api/groupedTransactions', async (req, res) => {
 
 app.listen(port, ()=>{
     console.log(`Server is running on port ${port}`);
-    console.log("To enter the app, open http://localhost:3000/");
-    console.log("To quit the app, press Ctrl+C")
+    console.log("To enter the api values, open http://localhost:3000/{add here the api value}");
+    console.log("To stop the api, press Ctrl+C")
 })
