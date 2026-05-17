@@ -20,6 +20,24 @@ export async function sellUserStock(stockSymbol: string, amountSold: number, sol
     }
 }
 
+export function getAllTransactions(){return getTransactions()}
+
+export async function updateUserStock(id: number, boughtAmount: number, boughtDate: string){
+    const transaction = getTransactionById(id);
+    if (!transaction){
+        throw new Error("Transaction not found!");
+    }
+    const symbol = transaction.stockSymbol;
+    const boughtPrice = await getDayStockPrice(symbol,new Date(boughtDate))
+    if (!boughtPrice)
+        throw new Error("No price found!")
+    updateTransaction(id, boughtAmount, boughtDate, boughtPrice.close)
+}
+
+export function deleteUserStock(id: number){
+    deleteTransaction(id);
+}
+
 export async function getPortfolio(){
     const transactions = getTransactions();
     let boughtSum = 0;
@@ -37,8 +55,7 @@ export async function getPortfolio(){
             const fetchedPrice = await getCurrentStockPrice(transaction.stockSymbol);
             if (!fetchedPrice)
                 throw new Error("No price found");
-            currentStockPrice = fetchedPrice;
-            priceCache[transaction.stockSymbol] = currentStockPrice;
+            priceCache[transaction.stockSymbol] = fetchedPrice;
         }
         else
             currentStockPrice = priceCache[transaction.stockSymbol]!;
@@ -46,19 +63,48 @@ export async function getPortfolio(){
     }
     return (currentSum + soldSum) - boughtSum;
 }
-
-export async function updateUserStock(id: number, boughtAmount: number, boughtDate: string){
-    const transaction = getTransactionById(id);
-    if (!transaction){
-        throw new Error("Transaction not found!");
+export async function getGroupedTransactions(){
+    const transactions = getTransactions();
+    const groupedTransactions: { [symbol: string]: { amount: number, totalInvested: number, buyDate: string, currentValue: number, totalSold: number, gain: number } } = {};
+    const priceCache: { [symbol: string]: number } = {};
+    for (const transaction of transactions) {
+        if (!priceCache[transaction.stockSymbol]) {
+            const fetchedPrice = await getCurrentStockPrice(transaction.stockSymbol);
+            if (!fetchedPrice)
+                throw new Error("No price found");
+            priceCache[transaction.stockSymbol] = fetchedPrice;
+        }
+        if (!groupedTransactions[transaction.stockSymbol]) {
+            groupedTransactions[transaction.stockSymbol] =
+                {
+                    amount: transaction.currentAmount,
+                    totalInvested: transaction.boughtAmount * transaction.boughtPrice,
+                    buyDate: transaction.boughtDate,
+                    currentValue: transaction.currentAmount * priceCache[transaction.stockSymbol]!,
+                    totalSold: transaction.amountSold * transaction.soldPrice,
+                    gain: 0 //need to be getPortfolio()
+                };
+        }
+        else {
+            groupedTransactions[transaction.stockSymbol]!.amount += transaction.currentAmount;
+            groupedTransactions[transaction.stockSymbol]!.totalInvested += transaction.boughtAmount * transaction.boughtPrice;
+            groupedTransactions[transaction.stockSymbol]!.currentValue += transaction.currentAmount * priceCache[transaction.stockSymbol]!;
+            groupedTransactions[transaction.stockSymbol]!.totalSold += transaction.amountSold * transaction.soldPrice;
+            groupedTransactions[transaction.stockSymbol]!.gain += 0 //need to be getPortfolio()
+            if (new Date(transaction.boughtDate) < new Date(groupedTransactions[transaction.stockSymbol]!.buyDate))
+                groupedTransactions[transaction.stockSymbol]!.buyDate = transaction.boughtDate;
+        }
     }
-    const symbol = transaction.stockSymbol;
-    const boughtPrice = await getDayStockPrice(symbol,new Date(boughtDate))
-    if (!boughtPrice)
-        throw new Error("No price found!")
-    updateTransaction(id, boughtAmount, boughtDate, boughtPrice.close)
-}
-
-export function deleteUserStock(id: number){
-    deleteTransaction(id);
+    for (const symbol in groupedTransactions) {
+        groupedTransactions[symbol]!.gain = (groupedTransactions[symbol]!.currentValue + groupedTransactions[symbol]!.totalSold) - (groupedTransactions[symbol]!.totalInvested)
+    }
+    return Object.entries(groupedTransactions).map(([symbol, data]) => ({
+        stockSymbol: symbol,
+        amount: data.amount,
+        totalInvested: data.totalInvested,
+        buyDate: data.buyDate,
+        currentValue: data.currentValue,
+        totalSold: data.totalSold,
+        gain: data.gain,
+    }))
 }
