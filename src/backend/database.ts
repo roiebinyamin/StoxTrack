@@ -1,6 +1,9 @@
 import Database from "better-sqlite3";
+import {fileURLToPath} from "url";
+import {dirname, join} from "path"
 
-const database = new Database("stoxTrack.db");
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const database = new Database(join(__dirname,"stoxTrack.db"));
 export interface Transaction {
     id: number;
     stockSymbol: string;
