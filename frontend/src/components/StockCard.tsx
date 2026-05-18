@@ -17,8 +17,12 @@ interface StockCardProps {
 
 function StockCard({transaction, onUpdate}: StockCardProps) {
     const [showBuyForm, setShowBuyForm] = useState(false);
-    const [buyAmount, setBuyAmount] = useState(0);
+    const [buyAmount, setBuyAmount] = useState<number | "">("")
     const [buyDate, setBuyDate] = useState("");
+
+    const [showSellForm, setShowSellForm] = useState(false);
+    const [sellAmount, setSellAmount] = useState<number | "">("")
+    const [sellDate, setSellDate] = useState("");
 
     async function handleBuy() {
         await fetch('/api/buyStock', {
@@ -31,6 +35,20 @@ function StockCard({transaction, onUpdate}: StockCardProps) {
             })
         })
         setShowBuyForm(false) // hide the form after submitting
+        onUpdate()
+    }
+
+    async function handleSell() {
+        await fetch('/api/sellStock', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                stockSymbol: transaction.stockSymbol,
+                amountSold: sellAmount,
+                soldDate: sellDate
+            })
+        })
+        setShowSellForm(false)
         onUpdate()
     }
 
@@ -54,6 +72,23 @@ function StockCard({transaction, onUpdate}: StockCardProps) {
                         onChange={(e) =>setBuyDate(e.target.value)}
                     />
                     <button onClick={() => handleBuy()}>Confirm</button>
+                </div>
+            )}
+            <button onClick={() => setShowSellForm(!showSellForm)}>Sell</button>
+            {showSellForm && (
+                <div>
+                    <input
+                        type="number"
+                        placeholder="Amount of shares"
+                        value={sellAmount}
+                        onChange={(e) =>setSellAmount(Number(e.target.value))}
+                    />
+                    <input
+                        type="date"
+                        value={sellDate}
+                        onChange={(e) =>setSellDate(e.target.value)}
+                    />
+                    <button onClick={() => handleSell()}>Confirm</button>
                 </div>
             )}
         </div>
