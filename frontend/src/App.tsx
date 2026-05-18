@@ -12,14 +12,15 @@ interface GroupedTransaction {
 }
 
 function App() {
-
     const [transactions, setTransactions] = useState<GroupedTransaction[]>([])
+
+    async function loadData() {
+        const response = await fetch('/api/groupedTransactions');
+        const data = await response.json();
+        setTransactions(data);
+    }
+
     useEffect(() => {
-        async function loadData() {
-            const response = await fetch('/api/groupedTransactions');
-            const data = await response.json();
-            setTransactions(data);
-        }
         loadData();
     }, []);
     console.log(transactions)
@@ -28,7 +29,7 @@ function App() {
         <div>
             <h1>StoxTrack</h1>
             {transactions.map(t => (
-                <StockCard key={t.stockSymbol} transaction={t}/>
+                <StockCard key={t.stockSymbol} transaction={t} onUpdate={loadData}/>
             ))}
         </div>
     )

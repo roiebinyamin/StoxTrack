@@ -12,12 +12,27 @@ interface GroupedTransaction {
 
 interface StockCardProps {
     transaction: GroupedTransaction;
+    onUpdate: () => void;
 }
 
-function StockCard({transaction}: StockCardProps) {
+function StockCard({transaction, onUpdate}: StockCardProps) {
     const [showBuyForm, setShowBuyForm] = useState(false);
     const [buyAmount, setBuyAmount] = useState(0);
     const [buyDate, setBuyDate] = useState("");
+
+    async function handleBuy() {
+        await fetch('/api/buyStock', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                stockSymbol: transaction.stockSymbol,
+                boughtAmount: buyAmount,
+                boughtDate: buyDate
+            })
+        })
+        setShowBuyForm(false) // hide the form after submitting
+        onUpdate()
+    }
 
     return (
         <div>
@@ -38,7 +53,7 @@ function StockCard({transaction}: StockCardProps) {
                         value={buyDate}
                         onChange={(e) =>setBuyDate(e.target.value)}
                     />
-                    <button>Confirm</button>
+                    <button onClick={() => handleBuy()}>Confirm</button>
                 </div>
             )}
         </div>
