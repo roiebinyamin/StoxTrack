@@ -58,10 +58,16 @@ export function sellStock(stockSymbol: string, amountSold: number , soldDate: st
     }
 }
 
-export function updateTransaction(id: number, boughtAmount: number, boughtDate: string, boughtPrice: number) {
+export function updateBought(id: number, boughtAmount: number, boughtDate: string, boughtPrice: number) {
     const row = database.prepare('SELECT amountSold FROM transactions WHERE id = ?').get(id) as Transaction;
     const amountSold = row.amountSold;
     database.prepare(`UPDATE transactions SET boughtAmount = ?, currentAmount = ?, boughtDate = ?, boughtPrice = ? WHERE id = ?`).run(boughtAmount, boughtAmount- amountSold, boughtDate, boughtPrice, id);
+}
+
+export function updateSold(id: number, soldAmount: number, soldDate: string, soldPrice: number) {
+    const row = database.prepare('SELECT boughtAmount FROM transactions WHERE id = ?').get(id) as Transaction;
+    const boughtAmount = row.boughtAmount;
+    database.prepare(`UPDATE transactions SET amountSold = ?, soldDate = ?, soldPrice = ?, currentAmount = ? WHERE id = ?`).run(soldAmount, soldDate, soldPrice, boughtAmount - soldAmount, id);
 }
 
 export function deleteTransaction(id: number){

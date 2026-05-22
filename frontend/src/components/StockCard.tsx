@@ -1,4 +1,5 @@
 import {useState} from "react";
+import React from "react";
 
 interface GroupedTransaction {
     stockSymbol: string
@@ -16,6 +17,7 @@ interface StockEvent {
     amount: number;
     price: number;
     total: number;
+    id: number;
 }
 
 interface StockCardProps {
@@ -32,8 +34,13 @@ function StockCard({transaction, onUpdate}: StockCardProps) {
     const [sellAmount, setSellAmount] = useState<number | "">("")
     const [sellDate, setSellDate] = useState("");
 
-    const[showHistory, setShowHistory] = useState(false);
-    const[history, setHistory] = useState<StockEvent[]>([]);
+    const [showHistory, setShowHistory] = useState(false);
+    const [history, setHistory] = useState<StockEvent[]>([]);
+
+    const [updateId, setUpdateId] = useState<number | null>(null)
+    const [updateType, setUpdateType] = useState<string | null>(null)
+    const [updatedAmount, setUpdatedAmount] = useState<number | "">("")
+    const [updatedDate, setUpdatedDate] = useState("");
 
     async function handleBuy() {
         await fetch('/api/buyStock', {
@@ -45,7 +52,7 @@ function StockCard({transaction, onUpdate}: StockCardProps) {
                 boughtDate: buyDate
             })
         })
-        setShowBuyForm(false) // hide the form after submitting
+        setShowBuyForm(false)
         onUpdate()
     }
 
@@ -71,8 +78,32 @@ function StockCard({transaction, onUpdate}: StockCardProps) {
         setHistory(data)
     }
 
+    async function handleUpdate() {
+        await fetch('/api/updateStock', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                id: updateId,
+                type: updateType,
+                boughtAmount: updatedAmount,
+                boughtDate: updatedDate
+            })
+        })
+
+        const response = await fetch(`/api/timeline/${transaction.stockSymbol}`);
+        const data = await response.json();
+
+        setUpdateId(null);
+        setUpdatedAmount("")
+        setUpdatedDate("")
+        setUpdateType(null)
+        onUpdate()
+        setHistory(data);
+    }
+
     return (
-        <div>
+        <>
+            <div>
             <h2>{transaction.stockSymbol}</h2>
             <p>Shares owned: {transaction.amount.toFixed(2)}, Total money invested: {transaction.totalInvested.toFixed(2)}, Start of investing: {transaction.buyDate}</p>
             <p>Current money: {transaction.currentValue.toFixed(2)}, Total money sold: {transaction.totalSold.toFixed(2)}, Total gain: {transaction.gain.toFixed(2)}</p>
@@ -114,20 +145,39 @@ function StockCard({transaction, onUpdate}: StockCardProps) {
             {showHistory &&
                 <div>
                     {history.map(t => (
-                        <>
+                        <React.Fragment key={`${t.id}-${t.type}`}>
                             {t.type == "buy" &&
                                 <p style={{color:"limegreen"}}>{t.date} - {t.amount.toFixed(2)} shares of {transaction.stockSymbol} was bought at {t.price.toFixed(2)} for {t.total.toFixed(2)}</p>
                             }
                             {t.type == "sell" &&
                                 <p style={{color:"red"}}>{t.date} - {t.amount.toFixed(2)} shares of {transaction.stockSymbol} was sold at {t.price.toFixed(2)} for {t.total.toFixed(2)}</p>
                             }
-                        </>
+                            <button onClick={() => {setUpdateId(t.id);setUpdateType(t.type);setUpdatedAmount(t.amount);setUpdatedDate(t.date)}}>Update</button>
+                            {updateId === t.id && t.type === updateType &&(
+                                <div>
+                                    <input
+                                        type="number"
+                                        value={updatedAmount}
+                                        onChange={(e) =>setUpdatedAmount(Number(e.target.value))}
+                                    />
+                                    <input
+                                        type="date"
+                                        value={updatedDate}
+                                        onChange={(e) =>setUpdatedDate(e.target.value)}
+                                    />
+                                    <button onClick={() => handleUpdate()}>Confirm</button>
+                                </div>
+                            )}
+                        </React.Fragment>
                     ))}
+                    <br/>
+
                     <button onClick={() => setShowHistory(false)}>Close</button>
                 </div>
             }
         </div>
-    )
+        </>
+    );
 }
 
 export default StockCard

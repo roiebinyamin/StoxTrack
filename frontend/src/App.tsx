@@ -45,10 +45,10 @@ function App() {
     useEffect(() => {
         loadData();
     }, []);
-    console.log(transactions)
 
     return (
         <div>
+            <title>StoxTrack</title>
             <h1>StoxTrack</h1>
             {transactions.map(t => (
                 <StockCard key={t.stockSymbol} transaction={t} onUpdate={loadData}/>

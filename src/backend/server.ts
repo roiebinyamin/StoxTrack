@@ -33,7 +33,7 @@ app.post('/api/sellStock', async(req, res) => {
 })
 
 app.put('/api/updateStock', async(req, res) => {
-    await updateUserStock(req.body.id, req.body.boughtAmount, req.body.boughtDate);
+    await updateUserStock(req.body.id, req.body.type,  req.body.boughtAmount, req.body.boughtDate);
     res.json({success: true});
 })
 

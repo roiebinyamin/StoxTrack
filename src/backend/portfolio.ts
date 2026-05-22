@@ -1,4 +1,4 @@
-import {addTransaction, getTransactions, sellStock, updateTransaction, deleteTransaction, getTransactionById} from "./database.js";
+import {addTransaction, getTransactions, sellStock, updateBought, updateSold, deleteTransaction, getTransactionById} from "./database.js";
 import {getCurrentStockPrice, getRangeStockPrice, getDayStockPrice} from "./stockService.js"
 
 interface StockEvent {
@@ -7,6 +7,7 @@ interface StockEvent {
     amount: number;
     price: number;
     total: number;
+    id: number;
 }
 
 export async function buyStock(stockSymbol: string, boughtAmount: number, boughtDate: string){
@@ -30,16 +31,21 @@ export async function sellUserStock(stockSymbol: string, amountSold: number, sol
 
 export function getAllTransactions(){return getTransactions()}
 
-export async function updateUserStock(id: number, boughtAmount: number, boughtDate: string){
+export async function updateUserStock(id: number, type: string, newAmount: number, newDate: string){
     const transaction = getTransactionById(id);
     if (!transaction){
         throw new Error("Transaction not found!");
     }
     const symbol = transaction.stockSymbol;
-    const boughtPrice = await getDayStockPrice(symbol,new Date(boughtDate))
-    if (!boughtPrice)
+    const newPrice = await getDayStockPrice(symbol,new Date(newDate))
+    if (!newPrice)
         throw new Error("No price found!")
-    updateTransaction(id, boughtAmount, boughtDate, boughtPrice.close)
+    if (type == "buy"){
+        updateBought(id, newAmount, newDate, newPrice.close)
+    }
+    if (type == "sell"){
+        updateSold(id, newAmount, newDate, newPrice.close)
+    }
 }
 
 export function deleteUserStock(id: number){
@@ -126,9 +132,9 @@ export function getStockTimeline(stockSymbol: string){
     const transactions = getAllTransactionsWithSymbol(stockSymbol);
     const stockEvents: StockEvent[] = [];
     for (const transaction of transactions){
-        stockEvents.push({date: transaction.boughtDate, type: "buy", amount: transaction.boughtAmount, price: transaction.boughtPrice, total: transaction.boughtAmount * transaction.boughtPrice})
+        stockEvents.push({date: transaction.boughtDate, type: "buy", amount: transaction.boughtAmount, price: transaction.boughtPrice, total: transaction.boughtAmount * transaction.boughtPrice, id: transaction.id})
         if (transaction.soldDate){
-            stockEvents.push({date: transaction.soldDate, type: "sell", amount: transaction.amountSold, price: transaction.soldPrice, total: transaction.amountSold * transaction.soldPrice})
+            stockEvents.push({date: transaction.soldDate, type: "sell", amount: transaction.amountSold, price: transaction.soldPrice, total: transaction.amountSold * transaction.soldPrice, id: transaction.id})
         }
     }
     return stockEvents.sort((a,b) => new Date(a.date).getTime() - new Date(b.date).getTime())
