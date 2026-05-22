@@ -10,6 +10,14 @@ interface GroupedTransaction {
     gain: number
 }
 
+interface StockEvent {
+    date: string;
+    type: string;
+    amount: number;
+    price: number;
+    total: number;
+}
+
 interface StockCardProps {
     transaction: GroupedTransaction;
     onUpdate: () => void;
@@ -23,6 +31,9 @@ function StockCard({transaction, onUpdate}: StockCardProps) {
     const [showSellForm, setShowSellForm] = useState(false);
     const [sellAmount, setSellAmount] = useState<number | "">("")
     const [sellDate, setSellDate] = useState("");
+
+    const[showHistory, setShowHistory] = useState(false);
+    const[history, setHistory] = useState<StockEvent[]>([]);
 
     async function handleBuy() {
         await fetch('/api/buyStock', {
@@ -50,6 +61,14 @@ function StockCard({transaction, onUpdate}: StockCardProps) {
         })
         setShowSellForm(false)
         onUpdate()
+    }
+
+    async function handleHistory() {
+        const response = await fetch(`/api/timeline/${transaction.stockSymbol}`);
+        const data = await response.json();
+
+        setShowHistory(!showHistory);
+        setHistory(data)
     }
 
     return (
@@ -91,6 +110,22 @@ function StockCard({transaction, onUpdate}: StockCardProps) {
                     <button onClick={() => handleSell()}>Confirm</button>
                 </div>
             )}
+            <button onClick={() => handleHistory()}>History</button>
+            {showHistory &&
+                <div>
+                    {history.map(t => (
+                        <>
+                            {t.type == "buy" &&
+                                <p style={{color:"limegreen"}}>{t.date} - {t.amount.toFixed(2)} shares of {transaction.stockSymbol} was bought at {t.price.toFixed(2)} for {t.total.toFixed(2)}</p>
+                            }
+                            {t.type == "sell" &&
+                                <p style={{color:"red"}}>{t.date} - {t.amount.toFixed(2)} shares of {transaction.stockSymbol} was sold at {t.price.toFixed(2)} for {t.total.toFixed(2)}</p>
+                            }
+                        </>
+                    ))}
+                    <button onClick={() => setShowHistory(false)}>Close</button>
+                </div>
+            }
         </div>
     )
 }

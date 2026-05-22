@@ -35,7 +35,7 @@ export function addTransaction(stockSymbol: string, boughtAmount: number, bought
 }
 
 export function getTransactions(){
-    return database.prepare(`SELECT * FROM transactions`).all() as Transaction[];
+    return database.prepare(`SELECT * FROM transactions ORDER BY boughtDate ASC`).all() as Transaction[];
 }
 
 export function sellStock(stockSymbol: string, amountSold: number , soldDate: string, soldPrice: number) {

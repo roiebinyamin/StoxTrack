@@ -4,6 +4,8 @@ import {
     deleteUserStock,
     getAllTransactions,
     getGroupedTransactions,
+    getAllTransactionsWithSymbol,
+    getStockTimeline,
     getPortfolio,
     sellUserStock,
     updateUserStock
@@ -42,6 +44,14 @@ app.delete('/api/deleteStock', async(req, res) => {
 
 app.get('/api/transactions', (req, res) => {
     res.json(getAllTransactions());
+})
+
+app.get('/api/transactions/:symbol', (req , res) => {
+    res.json(getAllTransactionsWithSymbol(req.params.symbol));
+})
+
+app.get('/api/timeline/:symbol', (req, res) => {
+    res.json(getStockTimeline(req.params.symbol));
 })
 
 app.get('/api/groupedTransactions', async (req, res) => {

@@ -1,6 +1,14 @@
 import {addTransaction, getTransactions, sellStock, updateTransaction, deleteTransaction, getTransactionById} from "./database.js";
 import {getCurrentStockPrice, getRangeStockPrice, getDayStockPrice} from "./stockService.js"
 
+interface StockEvent {
+    date: string;
+    type: string;
+    amount: number;
+    price: number;
+    total: number;
+}
+
 export async function buyStock(stockSymbol: string, boughtAmount: number, boughtDate: string){
     const boughtPrice = await getDayStockPrice(stockSymbol, new Date(boughtDate));
     if (!boughtPrice)
@@ -107,4 +115,21 @@ export async function getGroupedTransactions(){
         totalSold: data.totalSold,
         gain: data.gain,
     }))
+}
+
+export function getAllTransactionsWithSymbol(stockSymbol: string){
+    const transactions = getTransactions();
+    return transactions.filter(t => t.stockSymbol == stockSymbol);
+}
+
+export function getStockTimeline(stockSymbol: string){
+    const transactions = getAllTransactionsWithSymbol(stockSymbol);
+    const stockEvents: StockEvent[] = [];
+    for (const transaction of transactions){
+        stockEvents.push({date: transaction.boughtDate, type: "buy", amount: transaction.boughtAmount, price: transaction.boughtPrice, total: transaction.boughtAmount * transaction.boughtPrice})
+        if (transaction.soldDate){
+            stockEvents.push({date: transaction.soldDate, type: "sell", amount: transaction.amountSold, price: transaction.soldPrice, total: transaction.amountSold * transaction.soldPrice})
+        }
+    }
+    return stockEvents.sort((a,b) => new Date(a.date).getTime() - new Date(b.date).getTime())
 }
