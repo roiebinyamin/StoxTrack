@@ -41,28 +41,7 @@ function StockCard({transaction, onUpdate}: StockCardProps) {
     const [updatedAmount, setUpdatedAmount] = useState<number | "">("")
     const [updatedDate, setUpdatedDate] = useState("");
 
-    function showForm(type: string) {
-        if (type === "buy") {
-            setShowBuyForm(true)
-            setShowSellForm(false)
-            setShowSellForm(false)
-        }
-        if (type === "sell"){
-            setShowSellForm(true)
-            setShowBuyForm(false)
-            setShowHistory(false)
-        }
-        if (type === "history"){
-            setShowHistory(true)
-            setShowBuyForm(false)
-            setShowSellForm(false)
-        }
-    }
-
     async function handleBuy() {
-        setShowSellForm(false)
-        setShowHistory(false)
-
         await fetch('/api/buyStock', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -72,14 +51,11 @@ function StockCard({transaction, onUpdate}: StockCardProps) {
                 boughtDate: buyDate
             })
         })
-        showForm("buy")
+        setShowBuyForm(false)
         onUpdate()
     }
 
     async function handleSell() {
-        setShowBuyForm(false)
-        setShowHistory(false)
-
         await fetch('/api/sellStock', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -89,18 +65,15 @@ function StockCard({transaction, onUpdate}: StockCardProps) {
                 soldDate: sellDate
             })
         })
-        showForm("sell")
+        setShowSellForm(false)
         onUpdate()
     }
 
     async function handleHistory() {
-        setShowBuyForm(false)
-        setShowSellForm(false)
-
         const response = await fetch(`/api/transactions/${transaction.stockSymbol}`);
         const data = await response.json();
 
-        showForm("history")
+        setShowHistory(!showHistory);
         setHistory(data)
     }
 
@@ -116,15 +89,12 @@ function StockCard({transaction, onUpdate}: StockCardProps) {
             })
         })
 
-        const response = await fetch(`/api/transactions/${transaction.stockSymbol}`);
-        const data = await response.json();
-
         setUpdateId(null);
         setUpdatedAmount("")
         setUpdatedDate("")
         setUpdateType(null)
         onUpdate()
-        setHistory(data);
+        handleHistory()
     }
 
     async function handleDelete(id: number) {
@@ -135,13 +105,8 @@ function StockCard({transaction, onUpdate}: StockCardProps) {
                 id: id,
             })
         })
-        console.log("hello2")
-        const response = await fetch(`/api/transactions/${transaction.stockSymbol}`);
-        const data = await response.json();
-
-        setDeleteId(null)
         onUpdate()
-        setHistory(data);
+        handleHistory()
     }
 
     return (
@@ -150,12 +115,12 @@ function StockCard({transaction, onUpdate}: StockCardProps) {
             <h2>{transaction.stockSymbol}</h2>
             <p>Shares owned: {transaction.amount.toFixed(2)}, Total money invested: {transaction.totalInvested.toFixed(2)}, Start of investing: {transaction.buyDate}</p>
             <p>Current money: {transaction.currentValue.toFixed(2)}, Total money sold: {transaction.totalSold.toFixed(2)}, Total gain: {transaction.gain.toFixed(2)}</p>
-            <button onClick={() => setShowBuyForm(!showBuyForm)}>Buy</button>
+            <button onClick={() => {setShowBuyForm(!showBuyForm);setShowSellForm(false);setShowHistory(false)}}>Buy</button>
             {showBuyForm && (
                 <div>
                     <input
                         type="number"
-                        placeholder="Amount of shares"
+                        placeholder="Amount of bought shares"
                         value={buyAmount}
                         onChange={(e) =>setBuyAmount(Number(e.target.value))}
                     />
@@ -167,12 +132,12 @@ function StockCard({transaction, onUpdate}: StockCardProps) {
                     <button onClick={() => handleBuy()}>Confirm</button>
                 </div>
             )}
-            <button onClick={() => setShowSellForm(!showSellForm)}>Sell</button>
+            <button onClick={() => {setShowSellForm(!showSellForm);setShowHistory(false);setShowBuyForm(false)}}>Sell</button>
             {showSellForm && (
                 <div>
                     <input
                         type="number"
-                        placeholder="Amount of shares"
+                        placeholder="Amount of sold shares"
                         value={sellAmount}
                         onChange={(e) =>setSellAmount(Number(e.target.value))}
                     />
@@ -184,7 +149,7 @@ function StockCard({transaction, onUpdate}: StockCardProps) {
                     <button onClick={() => handleSell()}>Confirm</button>
                 </div>
             )}
-            <button onClick={() => handleHistory()}>History</button>
+            <button onClick={() => {handleHistory();setShowBuyForm(false);setShowSellForm(false)}}>History</button>
             {showHistory &&
                 <div>
                     {history.map(t => (
@@ -216,7 +181,6 @@ function StockCard({transaction, onUpdate}: StockCardProps) {
                                         handleDelete(t.id);
                                     }
                                 }}>Delete</button>
-                            {deleteId === t.id}
                         </React.Fragment>
                     ))}
                     <br/>
