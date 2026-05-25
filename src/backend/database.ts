@@ -7,67 +7,33 @@ const database = new Database(join(__dirname,"stoxTrack.db"));
 export interface Transaction {
     id: number;
     stockSymbol: string;
-    currentAmount: number;
-    boughtAmount: number;
-    boughtDate: string;
-    boughtPrice: number;
-    amountSold: number;
-    soldDate: string | null;
-    soldPrice: number;
+    amount: number;
+    date: string;
+    price: number;
+    type: string;
 }
 
 database.exec(`
     CREATE TABLE IF NOT EXISTS transactions (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
             stockSymbol TEXT,
-            currentAmount REAL,
-            boughtAmount REAL,
-            boughtDate TEXT,
-            boughtPrice REAL,
-            amountSold REAL DEFAULT 0,
-            soldDate TEXT,
-            soldPrice REAL DEFAULT 0
+            amount REAL,
+            date TEXT,
+            price REAL,
+            type TEXT
     )
 `);
 
-export function addTransaction(stockSymbol: string, boughtAmount: number, boughtDate: string, boughtPrice: number) {
-    database.prepare(`INSERT INTO transactions (stockSymbol, currentAmount, boughtAmount, boughtDate, boughtPrice) VALUES (?, ?, ?, ?, ?)`).run(stockSymbol, boughtAmount, boughtAmount, boughtDate, boughtPrice);
+export function addTransaction(stockSymbol: string, amount: number, date: string, price: number, type: string) {
+    database.prepare(`INSERT INTO transactions (stockSymbol, amount, date, price, type) VALUES (?, ?, ?, ?, ?)`).run(stockSymbol, amount, date, price, type);
 }
 
 export function getTransactions(){
-    return database.prepare(`SELECT * FROM transactions ORDER BY boughtDate ASC`).all() as Transaction[];
+    return database.prepare(`SELECT * FROM transactions ORDER BY date ASC`).all() as Transaction[];
 }
 
-export function sellStock(stockSymbol: string, amountSold: number , soldDate: string, soldPrice: number) {
-    const allShares = database.prepare(`SELECT * FROM transactions WHERE stockSymbol = ? ORDER BY boughtDate`).all(stockSymbol) as Transaction[];
-    const total = allShares.reduce((sum, row) => sum + row.currentAmount, 0)
-    if (total < amountSold) {
-        throw new Error("Not enough shares to sell");
-    }
-    let remainingToSell = amountSold;
-    for (const row of allShares){
-        let currentAmount = row.currentAmount;
-        if (currentAmount < remainingToSell) {
-            remainingToSell -= currentAmount;
-            database.prepare('UPDATE transactions SET amountSold = amountSold + ?, soldDate = ?, soldPrice = ?, currentAmount = 0 WHERE id = ?').run(currentAmount, soldDate, soldPrice ,row.id);
-        }
-        else {
-            database.prepare('UPDATE transactions SET amountSold = ?, soldDate = ?, soldPrice = ?, currentAmount = ? WHERE id = ?').run(remainingToSell, soldDate, soldPrice, currentAmount - remainingToSell, row.id);
-            break
-        }
-    }
-}
-
-export function updateBought(id: number, boughtAmount: number, boughtDate: string, boughtPrice: number) {
-    const row = database.prepare('SELECT amountSold FROM transactions WHERE id = ?').get(id) as Transaction;
-    const amountSold = row.amountSold;
-    database.prepare(`UPDATE transactions SET boughtAmount = ?, currentAmount = ?, boughtDate = ?, boughtPrice = ? WHERE id = ?`).run(boughtAmount, boughtAmount- amountSold, boughtDate, boughtPrice, id);
-}
-
-export function updateSold(id: number, soldAmount: number, soldDate: string, soldPrice: number) {
-    const row = database.prepare('SELECT boughtAmount FROM transactions WHERE id = ?').get(id) as Transaction;
-    const boughtAmount = row.boughtAmount;
-    database.prepare(`UPDATE transactions SET amountSold = ?, soldDate = ?, soldPrice = ?, currentAmount = ? WHERE id = ?`).run(soldAmount, soldDate, soldPrice, boughtAmount - soldAmount, id);
+export function updateTransaction(id: number, newAmount: number, newDate: string, newPrice: number, newType: string) {
+    database.prepare(`UPDATE transactions SET amount = ?, date = ?, price = ?, type = ? WHERE id = ?`).run(newAmount, newDate, newPrice, newType, id);
 }
 
 export function deleteTransaction(id: number){
@@ -76,4 +42,8 @@ export function deleteTransaction(id: number){
 
 export function getTransactionById(id: number){
     return database.prepare(`SELECT * FROM transactions WHERE id = ?`).get(id) as Transaction
+}
+
+export function getTransactionBySymbol(stockSymbol: string){
+    return database.prepare(`SELECT * FROM transactions WHERE stockSymbol = ? ORDER BY date ASC`).all(stockSymbol) as Transaction[]
 }

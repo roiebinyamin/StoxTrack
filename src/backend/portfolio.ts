@@ -1,37 +1,39 @@
-import {addTransaction, getTransactions, sellStock, updateBought, updateSold, deleteTransaction, getTransactionById} from "./database.js";
+import {
+    addTransaction, getTransactions, deleteTransaction, getTransactionById, updateTransaction, getTransactionBySymbol,
+    type Transaction
+} from "./database.js";
 import {getCurrentStockPrice, getRangeStockPrice, getDayStockPrice} from "./stockService.js"
 
-interface StockEvent {
-    date: string;
-    type: string;
-    amount: number;
-    price: number;
-    total: number;
-    id: number;
+export async function buyUserStock(stockSymbol: string, amount: number, date: string){
+    const price = await getDayStockPrice(stockSymbol, new Date(date));
+    if (!price)
+        throw new Error("No price found");
+    addTransaction(stockSymbol, amount, date, price.close, "buy")
 }
 
-export async function buyStock(stockSymbol: string, boughtAmount: number, boughtDate: string){
-    const boughtPrice = await getDayStockPrice(stockSymbol, new Date(boughtDate));
-    if (!boughtPrice)
-        throw new Error("No price found");
-    addTransaction(stockSymbol, boughtAmount, boughtDate, boughtPrice.close)
-}
+export async function sellUserStock(stockSymbol: string, amount: number, date: string) {
+    const transactions = getTransactionBySymbol(stockSymbol);
+    let sumBought = 0;
+    let sumSold = 0;
 
-export async function sellUserStock(stockSymbol: string, amountSold: number, soldDate: string) {
-    try {
-        const soldPrice = await getDayStockPrice(stockSymbol, new Date(soldDate));
-        if (!soldPrice)
-        throw new Error("No price found");
-        sellStock(stockSymbol, amountSold, soldDate, soldPrice.close)
+    for (const transaction of transactions) {
+        if (transaction.type == "buy")
+            sumBought += transaction.amount;
+        if (transaction.type == "sell")
+            sumSold += transaction.amount;
     }
-    catch (error) {
-        console.log("User doesn't have enough shares!")
+
+    if (sumBought - sumSold >= amount) {
+        const price = await getDayStockPrice(stockSymbol, new Date(date));
+        if (!price)
+            throw new Error("No price found");
+        addTransaction(stockSymbol, amount, date, price.close, "sell")
     }
 }
 
 export function getAllTransactions(){return getTransactions()}
 
-export async function updateUserStock(id: number, type: string, newAmount: number, newDate: string){
+export async function updateUserStock(id: number, newType: string, newAmount: number, newDate: string){
     const transaction = getTransactionById(id);
     if (!transaction){
         throw new Error("Transaction not found!");
@@ -40,12 +42,7 @@ export async function updateUserStock(id: number, type: string, newAmount: numbe
     const newPrice = await getDayStockPrice(symbol,new Date(newDate))
     if (!newPrice)
         throw new Error("No price found!")
-    if (type == "buy"){
-        updateBought(id, newAmount, newDate, newPrice.close)
-    }
-    if (type == "sell"){
-        updateSold(id, newAmount, newDate, newPrice.close)
-    }
+        updateTransaction(id, newAmount, newDate, newPrice.close, newType)
 }
 
 export function deleteUserStock(id: number){
@@ -53,30 +50,43 @@ export function deleteUserStock(id: number){
 }
 
 export async function getPortfolio(){
-    const transactions = getTransactions();
-    let boughtSum = 0;
-    let soldSum = 0;
-    let currentSum  = 0;
-    let currentStockPrice = 0;
-    const priceCache: { [symbol: string]: number } = {};
-    for (const transaction of transactions) {
-        if (transaction.soldDate)
-            soldSum += transaction.amountSold * transaction.soldPrice;
-        boughtSum += transaction.boughtAmount * transaction.boughtPrice;
-        if (transaction.currentAmount == 0)
-            continue;
-        if (!priceCache[transaction.stockSymbol]) {
-            const fetchedPrice = await getCurrentStockPrice(transaction.stockSymbol);
-            if (!fetchedPrice)
-                throw new Error("No price found");
-            priceCache[transaction.stockSymbol] = fetchedPrice;
-        }
-        else
-            currentStockPrice = priceCache[transaction.stockSymbol]!;
-        currentSum += transaction.currentAmount * currentStockPrice
-    }
-    return (currentSum + soldSum) - boughtSum;
+   const transactions = getTransactions();
+   let boughtSum = 0;
+   let soldSum = 0;
+   let totalSum = 0;
+   const sharesHeld: { [symbol: string]: number } = {};
+   const priceCache: { [symbol: string]: number } = {};
+
+   for (const transaction of transactions) {
+       if (!sharesHeld[transaction.stockSymbol])
+           sharesHeld[transaction.stockSymbol] = 0;
+
+       if (transaction.type == "buy"){
+           sharesHeld[transaction.stockSymbol]! += transaction.amount;
+           boughtSum += transaction.amount * transaction.price;
+       }
+       if (transaction.type == "sell"){
+           sharesHeld[transaction.stockSymbol]! -= transaction.amount;
+           soldSum += transaction.amount * transaction.price;
+       }
+   }
+
+   for (const symbol in sharesHeld) {
+       if (priceCache[symbol]){
+           totalSum += sharesHeld[symbol]! * priceCache[symbol]!;
+       }
+       else{
+           let fetchedPrice = await getCurrentStockPrice(symbol);
+           if (!fetchedPrice)
+               throw new Error("No price found");
+           priceCache[symbol] = fetchedPrice;
+           totalSum += fetchedPrice  * sharesHeld[symbol]!;
+       }
+   }
+
+   return (totalSum + soldSum) - boughtSum;
 }
+
 export async function getGroupedTransactions(){
     const transactions = getTransactions();
     const groupedTransactions: { [symbol: string]: { amount: number, totalInvested: number, buyDate: string, currentValue: number, totalSold: number, gain: number } } = {};
@@ -89,24 +99,26 @@ export async function getGroupedTransactions(){
             priceCache[transaction.stockSymbol] = fetchedPrice;
         }
         if (!groupedTransactions[transaction.stockSymbol]) {
-            groupedTransactions[transaction.stockSymbol] =
-                {
-                    amount: transaction.currentAmount,
-                    totalInvested: transaction.boughtAmount * transaction.boughtPrice,
-                    buyDate: transaction.boughtDate,
-                    currentValue: transaction.currentAmount * priceCache[transaction.stockSymbol]!,
-                    totalSold: transaction.amountSold * transaction.soldPrice,
-                    gain: 0 //need to be getPortfolio()
-                };
+            groupedTransactions[transaction.stockSymbol] = {
+                amount: 0,
+                totalInvested: 0,
+                buyDate: transaction.date,
+                currentValue: 0,
+                totalSold: 0,
+                gain: 0
+            }
         }
-        else {
-            groupedTransactions[transaction.stockSymbol]!.amount += transaction.currentAmount;
-            groupedTransactions[transaction.stockSymbol]!.totalInvested += transaction.boughtAmount * transaction.boughtPrice;
-            groupedTransactions[transaction.stockSymbol]!.currentValue += transaction.currentAmount * priceCache[transaction.stockSymbol]!;
-            groupedTransactions[transaction.stockSymbol]!.totalSold += transaction.amountSold * transaction.soldPrice;
-            groupedTransactions[transaction.stockSymbol]!.gain += 0 //need to be getPortfolio()
-            if (new Date(transaction.boughtDate) < new Date(groupedTransactions[transaction.stockSymbol]!.buyDate))
-                groupedTransactions[transaction.stockSymbol]!.buyDate = transaction.boughtDate;
+        if (transaction.type == "buy"){
+            groupedTransactions[transaction.stockSymbol]!.amount += transaction.amount;
+            groupedTransactions[transaction.stockSymbol]!.totalInvested += transaction.amount * transaction.price;
+            groupedTransactions[transaction.stockSymbol]!.currentValue += transaction.amount * priceCache[transaction.stockSymbol]!;
+            if (new Date(transaction.date) < new Date(groupedTransactions[transaction.stockSymbol]!.buyDate))
+                groupedTransactions[transaction.stockSymbol]!.buyDate = transaction.date;
+        }
+        if (transaction.type == "sell"){
+            groupedTransactions[transaction.stockSymbol]!.amount -= transaction.amount;
+            groupedTransactions[transaction.stockSymbol]!.currentValue -= transaction.amount * priceCache[transaction.stockSymbol]!;
+            groupedTransactions[transaction.stockSymbol]!.totalSold += transaction.amount * transaction.price;
         }
     }
     for (const symbol in groupedTransactions) {
@@ -124,18 +136,5 @@ export async function getGroupedTransactions(){
 }
 
 export function getAllTransactionsWithSymbol(stockSymbol: string){
-    const transactions = getTransactions();
-    return transactions.filter(t => t.stockSymbol == stockSymbol);
-}
-
-export function getStockTimeline(stockSymbol: string){
-    const transactions = getAllTransactionsWithSymbol(stockSymbol);
-    const stockEvents: StockEvent[] = [];
-    for (const transaction of transactions){
-        stockEvents.push({date: transaction.boughtDate, type: "buy", amount: transaction.boughtAmount, price: transaction.boughtPrice, total: transaction.boughtAmount * transaction.boughtPrice, id: transaction.id})
-        if (transaction.soldDate){
-            stockEvents.push({date: transaction.soldDate, type: "sell", amount: transaction.amountSold, price: transaction.soldPrice, total: transaction.amountSold * transaction.soldPrice, id: transaction.id})
-        }
-    }
-    return stockEvents.sort((a,b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+    return getTransactionBySymbol(stockSymbol);
 }

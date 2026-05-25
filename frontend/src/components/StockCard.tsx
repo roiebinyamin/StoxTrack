@@ -16,7 +16,6 @@ interface StockEvent {
     type: string;
     amount: number;
     price: number;
-    total: number;
     id: number;
 }
 
@@ -42,7 +41,28 @@ function StockCard({transaction, onUpdate}: StockCardProps) {
     const [updatedAmount, setUpdatedAmount] = useState<number | "">("")
     const [updatedDate, setUpdatedDate] = useState("");
 
+    function showForm(type: string) {
+        if (type === "buy") {
+            setShowBuyForm(true)
+            setShowSellForm(false)
+            setShowSellForm(false)
+        }
+        if (type === "sell"){
+            setShowSellForm(true)
+            setShowBuyForm(false)
+            setShowHistory(false)
+        }
+        if (type === "history"){
+            setShowHistory(true)
+            setShowBuyForm(false)
+            setShowSellForm(false)
+        }
+    }
+
     async function handleBuy() {
+        setShowSellForm(false)
+        setShowHistory(false)
+
         await fetch('/api/buyStock', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -52,11 +72,14 @@ function StockCard({transaction, onUpdate}: StockCardProps) {
                 boughtDate: buyDate
             })
         })
-        setShowBuyForm(false)
+        showForm("buy")
         onUpdate()
     }
 
     async function handleSell() {
+        setShowBuyForm(false)
+        setShowHistory(false)
+
         await fetch('/api/sellStock', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -66,15 +89,18 @@ function StockCard({transaction, onUpdate}: StockCardProps) {
                 soldDate: sellDate
             })
         })
-        setShowSellForm(false)
+        showForm("sell")
         onUpdate()
     }
 
     async function handleHistory() {
-        const response = await fetch(`/api/timeline/${transaction.stockSymbol}`);
+        setShowBuyForm(false)
+        setShowSellForm(false)
+
+        const response = await fetch(`/api/transactions/${transaction.stockSymbol}`);
         const data = await response.json();
 
-        setShowHistory(!showHistory);
+        showForm("history")
         setHistory(data)
     }
 
@@ -90,13 +116,30 @@ function StockCard({transaction, onUpdate}: StockCardProps) {
             })
         })
 
-        const response = await fetch(`/api/timeline/${transaction.stockSymbol}`);
+        const response = await fetch(`/api/transactions/${transaction.stockSymbol}`);
         const data = await response.json();
 
         setUpdateId(null);
         setUpdatedAmount("")
         setUpdatedDate("")
         setUpdateType(null)
+        onUpdate()
+        setHistory(data);
+    }
+
+    async function handleDelete(id: number) {
+        await fetch('/api/deleteStock', {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                id: id,
+            })
+        })
+        console.log("hello2")
+        const response = await fetch(`/api/transactions/${transaction.stockSymbol}`);
+        const data = await response.json();
+
+        setDeleteId(null)
         onUpdate()
         setHistory(data);
     }
@@ -147,10 +190,10 @@ function StockCard({transaction, onUpdate}: StockCardProps) {
                     {history.map(t => (
                         <React.Fragment key={`${t.id}-${t.type}`}>
                             {t.type == "buy" &&
-                                <p style={{color:"limegreen"}}>{t.date} - {t.amount.toFixed(2)} shares of {transaction.stockSymbol} was bought at {t.price.toFixed(2)} for {t.total.toFixed(2)}</p>
+                                <p style={{color:"limegreen"}}>{t.date} - {t.amount.toFixed(2)} shares of {transaction.stockSymbol} was bought at {t.price.toFixed(2)} for {(t.amount * t.price).toFixed(2)}</p>
                             }
                             {t.type == "sell" &&
-                                <p style={{color:"red"}}>{t.date} - {t.amount.toFixed(2)} shares of {transaction.stockSymbol} was sold at {t.price.toFixed(2)} for {t.total.toFixed(2)}</p>
+                                <p style={{color:"red"}}>{t.date} - {t.amount.toFixed(2)} shares of {transaction.stockSymbol} was sold at {t.price.toFixed(2)} for {(t.amount * t.price).toFixed(2)}</p>
                             }
                             <button onClick={() => {setUpdateId(t.id);setUpdateType(t.type);setUpdatedAmount(t.amount);setUpdatedDate(t.date)}}>Update</button>
                             {updateId === t.id && t.type === updateType &&(
@@ -168,6 +211,12 @@ function StockCard({transaction, onUpdate}: StockCardProps) {
                                     <button onClick={() => handleUpdate()}>Confirm</button>
                                 </div>
                             )}
+                                <button onClick={()=> {
+                                    if (window.confirm("Are you sure you want to delete this transaction?")) {
+                                        handleDelete(t.id);
+                                    }
+                                }}>Delete</button>
+                            {deleteId === t.id}
                         </React.Fragment>
                     ))}
                     <br/>
