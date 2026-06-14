@@ -7,7 +7,8 @@ import {
     getAllTransactionsWithSymbol,
     getPortfolio,
     sellUserStock,
-    updateUserStock
+    updateUserStock,
+    getPortfolioHistory, getGroupedTransactionsForSymbol,
 } from "./portfolio.js";
 
 const app = express();
@@ -49,8 +50,17 @@ app.get('/api/groupedTransactions', async (req, res) => {
     res.json(await getGroupedTransactions());
 })
 
+app.get('/api/groupedTransactions/:symbol', async (req, res) => {
+    try {res.json(await getGroupedTransactionsForSymbol(req.params.symbol))}
+    catch (e) {res.status(404).json({error: "User does not have any transactions for this stock symbol/ Stock symbol not found"})}
+})
+
 app.get('/api/transactions/:symbol', (req , res) => {
     res.json(getAllTransactionsWithSymbol(req.params.symbol));
+})
+
+app.get('/api/portfolioHistory', async (req, res) => {
+    res.json(await getPortfolioHistory(req.query.startDate as string, req.query.endDate as string));
 })
 
 app.listen(port, ()=>{

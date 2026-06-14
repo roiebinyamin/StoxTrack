@@ -87,6 +87,39 @@ export async function getPortfolio(){
    return (totalSum + soldSum) - boughtSum;
 }
 
+export async function getGroupedTransactionsForSymbol(stockSymbol: string){
+    const transactions = getTransactionBySymbol(stockSymbol);
+    if (transactions.length == 0)
+        throw new Error("User didn't invest in this stock!");
+    let groupedTransactions: {stockSymbol: String, amount: number, totalInvested: number, buyDate: string, currentValue: number, totalSold: number, gain: number }
+    const currentPrice = await getCurrentStockPrice(stockSymbol);
+    if (!currentPrice)
+        throw new Error("No price found");
+    groupedTransactions = {
+        stockSymbol: stockSymbol,
+        amount: 0,
+        totalInvested: 0,
+        buyDate: transactions[0]!.date,
+        currentValue: 0,
+        totalSold: 0,
+        gain: 0
+    }
+    for (const transaction of transactions) {
+        if (transaction.type == "buy"){
+            groupedTransactions.amount += transaction.amount;
+            groupedTransactions.totalInvested += transaction.amount * transaction.price;
+            groupedTransactions.currentValue += transaction.amount * currentPrice;
+        }
+        if (transaction.type == "sell"){
+            groupedTransactions.amount -= transaction.amount;
+            groupedTransactions.currentValue -= transaction.amount * currentPrice;
+            groupedTransactions.totalSold += transaction.amount * transaction.price;
+        }
+    }
+    groupedTransactions.gain = (groupedTransactions.currentValue + groupedTransactions.totalSold) - (groupedTransactions.totalInvested)
+    return groupedTransactions;
+}
+
 export async function getGroupedTransactions(){
     const transactions = getTransactions();
     const groupedTransactions: { [symbol: string]: { amount: number, totalInvested: number, buyDate: string, currentValue: number, totalSold: number, gain: number } } = {};
@@ -112,8 +145,6 @@ export async function getGroupedTransactions(){
             groupedTransactions[transaction.stockSymbol]!.amount += transaction.amount;
             groupedTransactions[transaction.stockSymbol]!.totalInvested += transaction.amount * transaction.price;
             groupedTransactions[transaction.stockSymbol]!.currentValue += transaction.amount * priceCache[transaction.stockSymbol]!;
-            if (new Date(transaction.date) < new Date(groupedTransactions[transaction.stockSymbol]!.buyDate))
-                groupedTransactions[transaction.stockSymbol]!.buyDate = transaction.date;
         }
         if (transaction.type == "sell"){
             groupedTransactions[transaction.stockSymbol]!.amount -= transaction.amount;
@@ -137,4 +168,32 @@ export async function getGroupedTransactions(){
 
 export function getAllTransactionsWithSymbol(stockSymbol: string){
     return getTransactionBySymbol(stockSymbol);
+}
+
+export async function getPortfolioHistory(startDate: string, endDate: string){
+    const transactions = getTransactions();
+    const stockSymbols = Array.from(new Set(transactions.map(t => t.stockSymbol)));
+    const transactionsUntilStartDate = transactions.filter(t => t.date < startDate)
+    const sharesHeld: { [stockSymbol: string]: number } = {};
+    const portfolioValueByDate: { [date: string]: number } = {};
+    for (const transaction of transactionsUntilStartDate) {
+        if (transaction.type == "buy")
+            sharesHeld[transaction.stockSymbol] = (sharesHeld[transaction.stockSymbol] ?? 0) + transaction.amount;
+        if (transaction.type == "sell")
+            sharesHeld[transaction.stockSymbol] = (sharesHeld[transaction.stockSymbol] ?? 0) - transaction.amount;
+    }
+    for (const stockSymbol of stockSymbols) {
+        let prices = await getRangeStockPrice(stockSymbol, new Date(startDate), new Date(endDate));
+        for (const price of prices) {
+            let currentTransactions = transactions.filter(t => t.stockSymbol == stockSymbol && t.date == price.date.toISOString().slice(0, 10));
+            for (const currentTransaction of currentTransactions){
+                if (currentTransaction.type == "buy")
+                    sharesHeld[stockSymbol] = (sharesHeld[stockSymbol] ?? 0) + currentTransaction.amount;
+                if (currentTransaction.type == "sell")
+                    sharesHeld[stockSymbol] = (sharesHeld[stockSymbol] ?? 0) - currentTransaction.amount;
+            }
+            portfolioValueByDate[price.date.toISOString().slice(0,10)] = (portfolioValueByDate[price.date.toISOString().slice(0,10)] ?? 0) + sharesHeld[stockSymbol]! * price.close;
+        }
+    }
+    return Object.entries(portfolioValueByDate).map(([date, value]) => ({date, value}));
 }
