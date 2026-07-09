@@ -113,8 +113,8 @@ function StockCard({transaction, onUpdate}: StockCardProps) {
         <>
             <div>
             <h2>{transaction.stockSymbol}</h2>
-            <p>Shares owned: {transaction.amount.toFixed(2)}, Total money invested: {transaction.totalInvested.toFixed(2)}, Start of investing: {transaction.buyDate}</p>
-            <p>Current money: {transaction.currentValue.toFixed(2)}, Total money sold: {transaction.totalSold.toFixed(2)}, Total gain: {transaction.gain.toFixed(2)}</p>
+            <p>Shares owned: {transaction.amount.toFixed(4)}, Total money invested: {transaction.totalInvested.toFixed(4)}, Start of investing: {transaction.buyDate}</p>
+            <p>Current money: {transaction.currentValue.toFixed(4)}, Total money sold: {transaction.totalSold.toFixed(4)}, Total gain: {transaction.gain.toFixed(4)}</p>
             <button onClick={() => {setShowBuyForm(!showBuyForm);setShowSellForm(false);setShowHistory(false)}}>Buy</button>
             {showBuyForm && (
                 <div>

@@ -1,5 +1,6 @@
 import {useEffect, useState} from "react"
 import {Link} from "react-router-dom"
+import PortfolioChart from "../components/PortfolioChart.tsx";
 
 interface GroupedTransaction {
     stockSymbol: string
@@ -11,13 +12,27 @@ interface GroupedTransaction {
     gain: number
 }
 
+interface PortfolioPoint {
+    date: string;
+    value: number;
+}
+
 function HomePage() {
     const [transactions, setTransactions] = useState<GroupedTransaction[]>([])
+    const [portfolio, setPortfolio] = useState<PortfolioPoint[]>([])
 
     async function loadData() {
         const response = await fetch('/api/groupedTransactions');
         const data = await response.json();
         setTransactions(data);
+    }
+
+    async function loadPortfolio() {
+        const endDate = new Date().toISOString().slice(0, 10);
+        const startDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+        const response = await fetch(`/api/portfolioHistory?startDate=${startDate}&endDate=${endDate}`);
+        const data = await response.json();
+        setPortfolio(data);
     }
 
     const [showBuyForm, setShowBuyForm] = useState(false);
@@ -46,14 +61,22 @@ function HomePage() {
         loadData();
     }, []);
 
+    useEffect(() => {
+        loadPortfolio();
+    }, []);
+
     return (
         <div>
             <title>StoxTrack</title>
             <h1>StoxTrack</h1>
             <h2>Your Stocks</h2>
             {transactions.map(t => (
-                <Link to={`/stock/${t.stockSymbol}`}>{t.stockSymbol}</Link>
+                <div>
+                    <Link to={`/stock/${t.stockSymbol}`}>{t.stockSymbol}</Link>
+                </div>
             ))}
+            <br/>
+            <PortfolioChart data={portfolio} />
             <br/>
             <button onClick={() => setShowBuyForm(!showBuyForm)}>Create new Investment</button>
             {showBuyForm && (
