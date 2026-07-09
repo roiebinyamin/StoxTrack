@@ -197,3 +197,28 @@ export async function getPortfolioHistory(startDate: string, endDate: string){
     }
     return Object.entries(portfolioValueByDate).map(([date, value]) => ({date, value}));
 }
+
+export async function getStockHistory(stockSymbol: string, startDate: string, endDate: string){
+    const transactions = getTransactionBySymbol(stockSymbol);
+    let sharesHeld = 0;
+    const transactionsUntilStartDate = transactions.filter(t => t.date < startDate)
+    const portfolioValueByDate: { [date: string]: number } = {};
+    for (const transaction of transactionsUntilStartDate) {
+        if (transaction.type == "buy")
+            sharesHeld += transaction.amount;
+        if (transaction.type == "sell")
+            sharesHeld -= transaction.amount;
+    }
+    let prices = await getRangeStockPrice(stockSymbol, new Date(startDate), new Date(endDate));
+    for (const price of prices) {
+        let currentTransactions = transactions.filter(t => t.date == price.date.toISOString().slice(0, 10));
+        for (const currentTransaction of currentTransactions){
+            if (currentTransaction.type == "buy")
+                sharesHeld += currentTransaction.amount;
+            if (currentTransaction.type == "sell")
+                sharesHeld -= currentTransaction.amount;
+        }
+        portfolioValueByDate[price.date.toISOString().slice(0,10)] = sharesHeld * price.close;
+    }
+    return Object.entries(portfolioValueByDate).map(([date, value]) => ({date, value}));
+}

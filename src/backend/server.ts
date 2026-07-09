@@ -8,7 +8,9 @@ import {
     getPortfolio,
     sellUserStock,
     updateUserStock,
-    getPortfolioHistory, getGroupedTransactionsForSymbol,
+    getPortfolioHistory,
+    getGroupedTransactionsForSymbol,
+    getStockHistory,
 } from "./portfolio.js";
 
 const app = express();
@@ -61,6 +63,10 @@ app.get('/api/transactions/:symbol', (req , res) => {
 
 app.get('/api/portfolioHistory', async (req, res) => {
     res.json(await getPortfolioHistory(req.query.startDate as string, req.query.endDate as string));
+})
+
+app.get('/api/stockHistory/:symbol', async (req, res) => {
+    res.json(await getStockHistory(req.params.symbol ,req.query.startDate as string, req.query.endDate as string));
 })
 
 app.listen(port, ()=>{

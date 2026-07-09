@@ -1,6 +1,7 @@
 import {useParams} from "react-router-dom";
 import {useState, useEffect} from "react";
 import StockCard from "../components/StockCard.tsx";
+import PortfolioChart from "../components/PortfolioChart.tsx";
 
 interface GroupedTransaction {
     stockSymbol: string
@@ -12,8 +13,14 @@ interface GroupedTransaction {
     gain: number
 }
 
+interface PortfolioPoint {
+    date: string;
+    value: number;
+}
+
 function StockPage() {
     const { symbol } = useParams();
+    const [portfolio, setPortfolio] = useState<PortfolioPoint[]>([])
 
     const [transactions, setTransactions] = useState<GroupedTransaction>()
     const [notFound, setNotFound] = useState(false)
@@ -28,6 +35,14 @@ function StockPage() {
         setTransactions(data);
     }
 
+    async function loadStockPortfolio() {
+        const endDate = new Date().toISOString().slice(0, 10);
+        const startDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+        const response = await fetch(`/api/stockHistory/${symbol}?startDate=${startDate}&endDate=${endDate}`);
+        const data = await response.json();
+        setPortfolio(data);
+    }
+
     useEffect(()=> {
         loadData()
     }, [])
@@ -35,6 +50,10 @@ function StockPage() {
     useEffect(()=> {
         document.title = `StoxTrack - ${symbol}`;
     }, [symbol])
+
+    useEffect(() => {
+        loadStockPortfolio();
+    }, []);
 
     if (notFound) {
         return (
@@ -58,6 +77,8 @@ function StockPage() {
             <title>{symbol} - StoxTrack</title>
             <h1>{symbol} Page!</h1>
             <StockCard key={transactions.stockSymbol} transaction={transactions} onUpdate={loadData}/>
+            <br/>
+            <PortfolioChart data={portfolio} />
         </div>
     )
 }
