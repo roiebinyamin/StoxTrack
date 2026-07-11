@@ -25,6 +25,9 @@ function StockPage() {
     const [transactions, setTransactions] = useState<GroupedTransaction>()
     const [notFound, setNotFound] = useState(false)
 
+    const [startDate, setStartDate] = useState<string>(new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10));
+    const [endDate, setEndDate] = useState<string>(new Date().toISOString().slice(0, 10));
+
     async function loadData() {
         const response = await fetch(`/api/groupedTransactions/${symbol}`);
         if (response.status === 404) {
@@ -36,11 +39,14 @@ function StockPage() {
     }
 
     async function loadStockPortfolio() {
-        const endDate = new Date().toISOString().slice(0, 10);
-        const startDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
         const response = await fetch(`/api/stockHistory/${symbol}?startDate=${startDate}&endDate=${endDate}`);
         const data = await response.json();
         setPortfolio(data);
+    }
+
+    function handleRangeChange(startDate: string, endDate: string) {
+        setStartDate(startDate);
+        setEndDate(endDate);
     }
 
     useEffect(()=> {
@@ -78,7 +84,7 @@ function StockPage() {
             <h1>{symbol} Page!</h1>
             <StockCard key={transactions.stockSymbol} transaction={transactions} onUpdate={loadData}/>
             <br/>
-            <PortfolioChart data={portfolio} />
+            <PortfolioChart data={portfolio} onRangeChange={handleRangeChange} firstDate={transactions.buyDate}/>
         </div>
     )
 }

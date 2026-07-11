@@ -21,6 +21,9 @@ function HomePage() {
     const [transactions, setTransactions] = useState<GroupedTransaction[]>([])
     const [portfolio, setPortfolio] = useState<PortfolioPoint[]>([])
 
+    const [startDate, setStartDate] = useState<string>(new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10));
+    const [endDate, setEndDate] = useState<string>(new Date().toISOString().slice(0, 10));
+
     async function loadData() {
         const response = await fetch('/api/groupedTransactions');
         const data = await response.json();
@@ -28,11 +31,14 @@ function HomePage() {
     }
 
     async function loadPortfolio() {
-        const endDate = new Date().toISOString().slice(0, 10);
-        const startDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
         const response = await fetch(`/api/portfolioHistory?startDate=${startDate}&endDate=${endDate}`);
         const data = await response.json();
         setPortfolio(data);
+    }
+
+    function handleRangeChange(startDate: string, endDate: string) {
+        setStartDate(startDate);
+        setEndDate(endDate);
     }
 
     const [showBuyForm, setShowBuyForm] = useState(false);
@@ -76,7 +82,7 @@ function HomePage() {
                 </div>
             ))}
             <br/>
-            <PortfolioChart data={portfolio} />
+            <PortfolioChart data={portfolio} onRangeChange={handleRangeChange} firstDate={transactions[0]?.buyDate}/>
             <br/>
             <button onClick={() => setShowBuyForm(!showBuyForm)}>Create new Investment</button>
             {showBuyForm && (
