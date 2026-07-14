@@ -77,7 +77,7 @@ function PortfolioChart({data, onRangeChange, firstDate} : {data: PortfolioPoint
                 </div>
             )}
 
-            <div align="center">
+            <div style={{textAlign: "center"}}>
                 <LineChart width={1000} height={600} data={data}>
                     {/*<CartesianGrid />*/}
                     <XAxis dataKey="date"/>
