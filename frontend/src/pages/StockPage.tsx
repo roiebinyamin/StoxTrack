@@ -44,6 +44,12 @@ function StockPage() {
         setPortfolio(data);
     }
 
+    async function loadStockInterday(){
+        const response = await fetch(`/api/stockInterday/${symbol}`);
+        const data = await response.json();
+        setPortfolio(data);
+    }
+
     function handleRangeChange(startDate: string, endDate: string) {
         setStartDate(startDate);
         setEndDate(endDate);
@@ -58,8 +64,11 @@ function StockPage() {
     }, [symbol])
 
     useEffect(() => {
-        loadStockPortfolio();
-    }, []);
+        if (startDate != endDate)
+            loadStockPortfolio();
+        else
+            loadStockInterday();
+    }, [startDate, endDate]);
 
     if (notFound) {
         return (

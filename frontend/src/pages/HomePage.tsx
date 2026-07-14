@@ -36,6 +36,12 @@ function HomePage() {
         setPortfolio(data);
     }
 
+    async function loadPortfolioInterday(){
+        const response = await fetch(`/api/portfolioInterday`);
+        const data = await response.json();
+        setPortfolio(data);
+    }
+
     function handleRangeChange(startDate: string, endDate: string) {
         setStartDate(startDate);
         setEndDate(endDate);
@@ -68,8 +74,11 @@ function HomePage() {
     }, []);
 
     useEffect(() => {
-        loadPortfolio();
-    }, []);
+        if (startDate != endDate)
+            loadPortfolio();
+        else
+            loadPortfolioInterday();
+    }, [startDate, endDate]);
 
     return (
         <div>

@@ -11,6 +11,8 @@ import {
     getPortfolioHistory,
     getGroupedTransactionsForSymbol,
     getStockHistory,
+    getStockInterday,
+    getPortfolioInterday,
 } from "./portfolio.js";
 
 const app = express();
@@ -68,6 +70,15 @@ app.get('/api/portfolioHistory', async (req, res) => {
 app.get('/api/stockHistory/:symbol', async (req, res) => {
     res.json(await getStockHistory(req.params.symbol ,req.query.startDate as string, req.query.endDate as string));
 })
+
+app.get('/api/portfolioInterday', async (req, res) => {
+    res.json(await getPortfolioInterday())
+})
+
+app.get('/api/stockInterday/:symbol', async (req, res) => {
+    res.json(await getStockInterday(req.params.symbol));
+    }
+)
 
 app.listen(port, ()=>{
     console.log(`Server is running on port ${port}`);

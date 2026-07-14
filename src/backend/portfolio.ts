@@ -1,8 +1,7 @@
 import {
     addTransaction, getTransactions, deleteTransaction, getTransactionById, updateTransaction, getTransactionBySymbol,
-    type Transaction
 } from "./database.js";
-import {getCurrentStockPrice, getRangeStockPrice, getDayStockPrice} from "./stockService.js"
+import {getCurrentStockPrice, getRangeStockPrice, getDayStockPrice, getInterDayStockPrice} from "./stockService.js"
 
 export async function buyUserStock(stockSymbol: string, amount: number, date: string){
     const price = await getDayStockPrice(stockSymbol, new Date(date));
@@ -221,4 +220,45 @@ export async function getStockHistory(stockSymbol: string, startDate: string, en
         portfolioValueByDate[price.date.toISOString().slice(0,10)] = sharesHeld * price.close;
     }
     return Object.entries(portfolioValueByDate).map(([date, value]) => ({date, value}));
+}
+
+export async function getPortfolioInterday(){
+    const transactions = getTransactions();
+    const sharesHeld: { [stockSymbol: string]: number } = {};
+    const portfolioValueByTime: { [time: string]: number } = {};
+
+    for (const transaction of transactions) {
+        if (transaction.type == "buy")
+            sharesHeld[transaction.stockSymbol] = (sharesHeld[transaction.stockSymbol] ?? 0) + transaction.amount;
+        if (transaction.type == "sell")
+            sharesHeld[transaction.stockSymbol] = (sharesHeld[transaction.stockSymbol] ?? 0) - transaction.amount;
+    }
+    for (const stockSymbol in sharesHeld) {
+        let prices = await getInterDayStockPrice(stockSymbol);
+        for (const price of prices) {
+            if (price.close)
+                portfolioValueByTime[price.date.toISOString().slice(11, 16)] = sharesHeld[stockSymbol]! * price.close;
+        }
+    }
+    return Object.entries(portfolioValueByTime).map(([date, value]) => ({date, value}));
+}
+
+export async function getStockInterday(stockSymbol: string){
+    const prices = await getInterDayStockPrice(stockSymbol);
+    const transactions = getTransactionBySymbol(stockSymbol);
+    const portfolioValueByTime: { [time: string]: number } = {};
+    let sharesHeld = 0;
+
+    for (const transaction of transactions) {
+        if (transaction.type == "buy")
+            sharesHeld += transaction.amount;
+        if (transaction.type == "sell")
+            sharesHeld -= transaction.amount;
+    }
+
+    for (const price of prices) {
+        if (price.close)
+            portfolioValueByTime[price.date.toISOString().slice(11, 16)] = sharesHeld * price.close;
+    }
+    return Object.entries(portfolioValueByTime).map(([date, value]) => ({date, value}));
 }

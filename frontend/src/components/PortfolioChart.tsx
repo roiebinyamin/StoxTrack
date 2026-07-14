@@ -1,4 +1,4 @@
-import {LineChart, CartesianGrid, XAxis, YAxis, Tooltip, Line } from "recharts";
+import {LineChart, XAxis, YAxis, Tooltip, Line } from "recharts";
 import {useState} from "react";
 
 interface PortfolioPoint {
@@ -12,21 +12,44 @@ function PortfolioChart({data, onRangeChange, firstDate} : {data: PortfolioPoint
     const [customFirstDate, setCustomFirstDate] = useState<string>(firstDate)
     const [customEndDate, setCustomEndDate] = useState<string>(new Date().toISOString().slice(0,10))
 
+    const todayDate = new Date().toISOString().slice(0, 10);
+
+    function getClampedStartDate(wantedDate: string){
+        if (new Date(firstDate) > new Date(wantedDate))
+            return firstDate
+        else
+            return wantedDate
+    }
+
     return (
         <div>
-            <button onClick={() => {onRangeChange(new Date().toISOString().slice(0, 10), new Date().toISOString().slice(0,10))}}>Today</button>
+            <button onClick={() => {
+                    onRangeChange(getClampedStartDate(new Date(Date.now()).toISOString().slice(0, 10)),todayDate)
+            }}>Today</button>
 
-            <button onClick={() => {onRangeChange(new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().slice(0,10), new Date().toISOString().slice(0,10))}}>Week</button>
+            <button onClick={() => {
+                    onRangeChange(getClampedStartDate(new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().slice(0,10)), todayDate)
+            }}>Week</button>
 
-            <button onClick={() => {onRangeChange(new Date(new Date().setMonth(new Date().getMonth() -1)).toISOString().slice(0,10), new Date().toISOString().slice(0,10))}}>Month</button>
+            <button onClick={() => {
+                    onRangeChange(getClampedStartDate(new Date(new Date().setMonth(new Date().getMonth() -1)).toISOString().slice(0,10)), todayDate)
+            }}>Month</button>
 
-            <button onClick={() => {onRangeChange(new Date(new Date().getFullYear(), 0, 1).toISOString().slice(0, 10), new Date().toISOString().slice(0, 10))}}>YTD</button>
+            <button onClick={() => {
+                    onRangeChange(getClampedStartDate(new Date(new Date().getFullYear(), 0, 1).toISOString().slice(0, 10)), todayDate)
+            }}>YTD</button>
 
-            <button onClick={() => {onRangeChange(new Date(Date.now() - 365 * 24 *60 * 60 *1000).toISOString().slice(0,10), new Date().toISOString().slice(0, 10))}}>1 Year</button>
+            <button onClick={() => {
+                    onRangeChange(getClampedStartDate(new Date(Date.now() - 365 * 24 *60 * 60 *1000).toISOString().slice(0,10)), todayDate)
+            }}>1 Year</button>
 
-            <button onClick={() => {onRangeChange(new Date(Date.now() - 5 * 365 * 24 * 60 * 60 * 1000).toISOString().slice(0,10), new Date().toISOString().slice(0, 10))}}>5 Year</button>
+            <button onClick={() => {
+                    onRangeChange(getClampedStartDate(new Date(Date.now() - 5 * 365 * 24 * 60 * 60 * 1000).toISOString().slice(0,10)), todayDate)
+            }}>5 Year</button>
 
-            <button onClick={() => {onRangeChange(firstDate, new Date().toISOString().slice(0, 10))}}>MAX</button>
+            <button onClick={() => {
+                if (firstDate) {
+                    onRangeChange(firstDate, new Date().toISOString().slice(0, 10))}}}>MAX</button>
 
             <button onClick={() => {setShowCustomDatesForm(!showCustomDatesForm)}}>Custom</button>
             {showCustomDatesForm && (
@@ -43,12 +66,19 @@ function PortfolioChart({data, onRangeChange, firstDate} : {data: PortfolioPoint
                         value={customEndDate}
                         onChange={(e) => setCustomEndDate(e.target.value)}
                     />
-                    <button onClick={() => {onRangeChange(customFirstDate, customEndDate)}}>Confirm</button>
+                    <button onClick={() => {
+                        if (customFirstDate > customEndDate) {
+                            console.log("First date cannot be after end date")
+                        }
+                        if (new Date(firstDate) > new Date(customFirstDate))
+                            onRangeChange(firstDate, customEndDate)
+                        else
+                            onRangeChange(customFirstDate, customEndDate)}}>Confirm</button>
                 </div>
             )}
 
-            <LineChart width={500} height={300} data={data}>
-                <CartesianGrid />
+            <LineChart width={1000} height={600} data={data}>
+                {/*<CartesianGrid />*/}
                 <XAxis dataKey="date"/>
                 <YAxis dataKey="value"/>
                 <Tooltip/>

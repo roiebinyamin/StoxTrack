@@ -17,3 +17,9 @@ export async function getDayStockPrice(stockSymbol: string, date: Date) {
     const prices = await getRangeStockPrice(stockSymbol, new Date(date.getTime() - 5 * 1000 * 60 * 60 * 24) , date)
     return prices[prices.length -1];
 }
+
+export async function getInterDayStockPrice(stockSymbol: string){
+    const now = new Date();
+    const prices = await stockGetter.chart(stockSymbol, {period1: new Date(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), -(now.getTimezoneOffset() / 60)), interval: "30m"})
+    return prices.quotes
+}
