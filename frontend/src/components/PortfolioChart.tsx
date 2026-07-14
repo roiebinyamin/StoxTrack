@@ -77,13 +77,15 @@ function PortfolioChart({data, onRangeChange, firstDate} : {data: PortfolioPoint
                 </div>
             )}
 
-            <LineChart width={1000} height={600} data={data}>
-                {/*<CartesianGrid />*/}
-                <XAxis dataKey="date"/>
-                <YAxis dataKey="value"/>
-                <Tooltip/>
-                <Line type="monotone" dataKey="value" stroke="#8884d8"/>
-            </LineChart>
+            <div align="center">
+                <LineChart width={1000} height={600} data={data}>
+                    {/*<CartesianGrid />*/}
+                    <XAxis dataKey="date"/>
+                    <YAxis dataKey="value" domain={['dataMin - 1', 'dataMax + 1']} tickFormatter={x => x.toFixed(2)}/>
+                    <Tooltip/>
+                    <Line type="monotone" dataKey="value" stroke="#8884d8"/>
+                </LineChart>
+            </div>
         </div>
     )
 }
