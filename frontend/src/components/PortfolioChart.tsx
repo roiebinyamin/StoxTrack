@@ -82,7 +82,7 @@ function PortfolioChart({data, onRangeChange, firstDate} : {data: PortfolioPoint
                     {/*<CartesianGrid />*/}
                     <XAxis dataKey="date"/>
                     <YAxis dataKey="value" domain={['dataMin - 1', 'dataMax + 1']} tickFormatter={x => x.toFixed(2)}/>
-                    <Tooltip/>
+                    <Tooltip formatter={(value) => typeof value === "number" ? value.toFixed(4) : value} />
                     <Line type="monotone" dataKey="value" stroke="#8884d8"/>
                 </LineChart>
             </div>
