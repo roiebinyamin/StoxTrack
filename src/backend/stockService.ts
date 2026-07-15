@@ -23,3 +23,8 @@ export async function getInterDayStockPrice(stockSymbol: string){
     const prices = await stockGetter.chart(stockSymbol, {period1: new Date(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), -(now.getTimezoneOffset() / 60)), interval: "30m"})
     return prices.quotes
 }
+
+export async function isMarketOpen(stockSymbol: string){
+    const stock = await stockGetter.quote(stockSymbol)
+    return stock.marketState === "REGULAR"
+}

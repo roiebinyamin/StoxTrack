@@ -2,7 +2,13 @@ import {
     addTransaction, getTransactions, deleteTransaction, getTransactionById, updateTransaction, getTransactionBySymbol,
     type Transaction,
 } from "./database.js";
-import {getCurrentStockPrice, getRangeStockPrice, getDayStockPrice, getInterDayStockPrice} from "./stockService.js"
+import {
+    getCurrentStockPrice,
+    getRangeStockPrice,
+    getDayStockPrice,
+    getInterDayStockPrice,
+    isMarketOpen
+} from "./stockService.js"
 
 export async function buyUserStock(stockSymbol: string, amount: number, date: string){
     const price = await getDayStockPrice(stockSymbol, new Date(date));
@@ -215,12 +221,12 @@ export async function getPortfolioInterday(){
     return Object.entries(portfolioValueByTime).map(([date, value]) => ({date, value}));
 }
 
-export async function getPortfolioTodayGain(){
+export async function getTodayPortfolioGain(){
     let totalGain = 0;
     const transactions = getTransactions();
     const stockSymbols = Array.from(new Set(transactions.map(t => t.stockSymbol)));
     for (const stockSymbol of stockSymbols) {
-        totalGain += await getStockTodayGain(stockSymbol);
+        totalGain += await getTodayStockGain(stockSymbol);
     }
     return totalGain;
 }
@@ -265,10 +271,14 @@ export async function getStockInterday(stockSymbol: string){
     return Object.entries(portfolioValueByTime).map(([date, value]) => ({date, value}));
 }
 
-export async function getStockTodayGain(stockSymbol: string){
+export async function getTodayStockGain(stockSymbol: string){
     const now = new Date();
     const price = await getDayStockPrice(stockSymbol, now);
-    if (!price || price.date.toISOString() != new Date(Date.now()).toISOString()) {
+    if (!price){
+        console.log("No price found for today");
+        return 0;
+    }
+    if (!await isMarketOpen(stockSymbol)) {
         console.log("The stock Market is closed now")
         return 0;
     }
@@ -276,11 +286,13 @@ export async function getStockTodayGain(stockSymbol: string){
         const transactions = getTransactionBySymbol(stockSymbol);
         const sharesHeld = getStockShares(transactions);
         const todayPrice = await getCurrentStockPrice(stockSymbol);
-        const yesterdayPrice = await getDayStockPrice(stockSymbol, new Date(new Date().setDate(new Date().getDate() - 1)));
+        const yesterdayPrice = await getDayStockPrice(stockSymbol, new Date(now.getTime() - 24 * 60 * 60 * 1000));
         if (!todayPrice)
             throw new Error("No price found for today");
         if (!yesterdayPrice)
             throw new Error("No price found for yesterday");
-        return sharesHeld * (todayPrice - yesterdayPrice.close);
+        if (todayPrice == yesterdayPrice.close.toFixed(2))
+            return 0;
+        return Number((sharesHeld * (todayPrice - yesterdayPrice.close)).toFixed(4));
     }
 }

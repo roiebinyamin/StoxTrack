@@ -2,6 +2,7 @@ import {useParams} from "react-router-dom";
 import {useState, useEffect} from "react";
 import StockCard from "../components/StockCard.tsx";
 import PortfolioChart from "../components/PortfolioChart.tsx";
+import StockSummary from "../components/StockSummary.tsx";
 
 interface GroupedTransaction {
     stockSymbol: string
@@ -21,6 +22,7 @@ interface PortfolioPoint {
 function StockPage() {
     const { symbol } = useParams();
     const [portfolio, setPortfolio] = useState<PortfolioPoint[]>([])
+    const [todayGain, setTodayGain] = useState<number>(0)
 
     const [transactions, setTransactions] = useState<GroupedTransaction>()
     const [notFound, setNotFound] = useState(false)
@@ -50,6 +52,12 @@ function StockPage() {
         setPortfolio(data);
     }
 
+    async function loadTodayGain(){
+        const response = await fetch(`/api/todayStockGain/${symbol}`);
+        const data = await response.json();
+        setTodayGain(data);
+    }
+
     function handleRangeChange(startDate: string, endDate: string) {
         setStartDate(startDate);
         setEndDate(endDate);
@@ -57,6 +65,7 @@ function StockPage() {
 
     useEffect(()=> {
         loadData()
+        loadTodayGain()
     }, [])
 
     useEffect(()=> {
@@ -92,6 +101,8 @@ function StockPage() {
             <title>{symbol} - StoxTrack</title>
             <h1>{symbol} Page!</h1>
             <StockCard key={transactions.stockSymbol} transaction={transactions} onUpdate={loadData}/>
+            <br/>
+            <StockSummary todayGain={todayGain}/>
             <br/>
             <PortfolioChart data={portfolio} onRangeChange={handleRangeChange} firstDate={transactions.buyDate}/>
         </div>

@@ -13,6 +13,8 @@ import {
     getStockHistory,
     getStockInterday,
     getPortfolioInterday,
+    getTodayStockGain,
+    getTodayPortfolioGain,
 } from "./portfolio.js";
 
 const app = express();
@@ -79,6 +81,16 @@ app.get('/api/stockInterday/:symbol', async (req, res) => {
     res.json(await getStockInterday(req.params.symbol));
     }
 )
+
+app.get('/api/todayStockGain/:symbol', async (req, res) => {
+    try {res.json(await getTodayStockGain(req.params.symbol));}
+    catch (e) {res.status(500).json({error: "Internal server error, the stock Market might not be open now"})}
+})
+
+app.get('/api/todayPortfolioGain', async (req, res) => {
+    try {res.json(await getTodayPortfolioGain())}
+    catch (e) {res.status(500).json({error: "Internal server error, the stock Market might not be open now"})}
+})
 
 app.listen(port, ()=>{
     console.log(`Server is running on port ${port}`);

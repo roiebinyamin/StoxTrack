@@ -25,7 +25,7 @@ function PortfolioChart({data, onRangeChange, firstDate} : {data: PortfolioPoint
         <div>
             <button onClick={() => {
                     onRangeChange(getClampedStartDate(new Date(Date.now()).toISOString().slice(0, 10)),todayDate)
-            }}>Today</button>
+            }}>Day</button>
 
             <button onClick={() => {
                     onRangeChange(getClampedStartDate(new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().slice(0,10)), todayDate)

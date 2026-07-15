@@ -1,6 +1,7 @@
 import {useEffect, useState} from "react"
 import {Link} from "react-router-dom"
 import PortfolioChart from "../components/PortfolioChart.tsx";
+import PortfolioSummary from "../components/PortfolioSummary.tsx";
 
 interface GroupedTransaction {
     stockSymbol: string
@@ -20,6 +21,7 @@ interface PortfolioPoint {
 function HomePage() {
     const [transactions, setTransactions] = useState<GroupedTransaction[]>([])
     const [portfolio, setPortfolio] = useState<PortfolioPoint[]>([])
+    const [todayGain, setTodayGain] = useState<number>(0)
 
     const [startDate, setStartDate] = useState<string>(new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10));
     const [endDate, setEndDate] = useState<string>(new Date().toISOString().slice(0, 10));
@@ -40,6 +42,12 @@ function HomePage() {
         const response = await fetch(`/api/portfolioInterday`);
         const data = await response.json();
         setPortfolio(data);
+    }
+
+    async function loadTodayGain(){
+        const response = await fetch(`/api/todayGain`);
+        const data = await response.json();
+        setTodayGain(data);
     }
 
     function handleRangeChange(startDate: string, endDate: string) {
@@ -71,6 +79,7 @@ function HomePage() {
 
     useEffect(() => {
         loadData();
+        loadTodayGain();
     }, []);
 
     useEffect(() => {
@@ -90,6 +99,8 @@ function HomePage() {
                     <Link to={`/stock/${t.stockSymbol}`}>{t.stockSymbol}</Link>
                 </div>
             ))}
+            <br/>
+            <PortfolioSummary todayGain={todayGain}/>
             <br/>
             <PortfolioChart data={portfolio} onRangeChange={handleRangeChange} firstDate={transactions[0]?.buyDate}/>
             <br/>
