@@ -171,28 +171,29 @@ export function getAllTransactionsWithSymbol(stockSymbol: string){
 }
 
 //portfolio functions
-export async function getPortfolioHistory(startDate: string, endDate: string){
-    const transactions = getTransactions();
-    const stockSymbols = Array.from(new Set(transactions.map(t => t.stockSymbol)));
-    const transactionsUntilStartDate = transactions.filter(t => t.date < startDate)
+function getPortfolioShares(transactions: Transaction[]){
     const sharesHeld: { [stockSymbol: string]: number } = {};
-    const portfolioValueByDate: { [date: string]: number } = {};
-    for (const transaction of transactionsUntilStartDate) {
+    for (const transaction of transactions) {
         if (transaction.type == "buy")
             sharesHeld[transaction.stockSymbol] = (sharesHeld[transaction.stockSymbol] ?? 0) + transaction.amount;
         if (transaction.type == "sell")
             sharesHeld[transaction.stockSymbol] = (sharesHeld[transaction.stockSymbol] ?? 0) - transaction.amount;
     }
+    return sharesHeld;
+}
+
+export async function getPortfolioHistory(startDate: string, endDate: string){
+    const transactions = getTransactions();
+    const stockSymbols = Array.from(new Set(transactions.map(t => t.stockSymbol)));
+    const transactionsUntilStartDate = transactions.filter(t => t.date < startDate)
+    const portfolioValueByDate: { [date: string]: number } = {};
+    const sharesHeld: { [stockSymbol: string]: number } = getPortfolioShares(transactionsUntilStartDate);
+
     for (const stockSymbol of stockSymbols) {
         let prices = await getRangeStockPrice(stockSymbol, new Date(startDate), new Date(endDate));
         for (const price of prices) {
             let currentTransactions = transactions.filter(t => t.stockSymbol == stockSymbol && t.date == price.date.toISOString().slice(0, 10));
-            for (const currentTransaction of currentTransactions){
-                if (currentTransaction.type == "buy")
-                    sharesHeld[stockSymbol] = (sharesHeld[stockSymbol] ?? 0) + currentTransaction.amount;
-                if (currentTransaction.type == "sell")
-                    sharesHeld[stockSymbol] = (sharesHeld[stockSymbol] ?? 0) - currentTransaction.amount;
-            }
+            sharesHeld[stockSymbol] = (sharesHeld[stockSymbol] ?? 0) + getStockShares(currentTransactions);
             portfolioValueByDate[price.date.toISOString().slice(0,10)] = (portfolioValueByDate[price.date.toISOString().slice(0,10)] ?? 0) + sharesHeld[stockSymbol]! * price.close;
         }
     }
@@ -201,15 +202,9 @@ export async function getPortfolioHistory(startDate: string, endDate: string){
 
 export async function getPortfolioInterday(){
     const transactions = getTransactions();
-    const sharesHeld: { [stockSymbol: string]: number } = {};
+    const sharesHeld: { [stockSymbol: string]: number } = getPortfolioShares(transactions);
     const portfolioValueByTime: { [time: string]: number } = {};
 
-    for (const transaction of transactions) {
-        if (transaction.type == "buy")
-            sharesHeld[transaction.stockSymbol] = (sharesHeld[transaction.stockSymbol] ?? 0) + transaction.amount;
-        if (transaction.type == "sell")
-            sharesHeld[transaction.stockSymbol] = (sharesHeld[transaction.stockSymbol] ?? 0) - transaction.amount;
-    }
     for (const stockSymbol in sharesHeld) {
         let prices = await getInterDayStockPrice(stockSymbol);
         for (const price of prices) {
