@@ -1,5 +1,6 @@
 import {
     addTransaction, getTransactions, deleteTransaction, getTransactionById, updateTransaction, getTransactionBySymbol,
+    type Transaction,
 } from "./database.js";
 import {getCurrentStockPrice, getRangeStockPrice, getDayStockPrice, getInterDayStockPrice} from "./stockService.js"
 
@@ -219,28 +220,28 @@ export async function getPortfolioInterday(){
     return Object.entries(portfolioValueByTime).map(([date, value]) => ({date, value}));
 }
 
-
 //stock functions
-export async function getStockHistory(stockSymbol: string, startDate: string, endDate: string){
-    const transactions = getTransactionBySymbol(stockSymbol);
+function getStockShares(transactions: Transaction[]){
     let sharesHeld = 0;
-    const transactionsUntilStartDate = transactions.filter(t => t.date < startDate)
-    const portfolioValueByDate: { [date: string]: number } = {};
-    for (const transaction of transactionsUntilStartDate) {
+    for (const transaction of transactions) {
         if (transaction.type == "buy")
             sharesHeld += transaction.amount;
         if (transaction.type == "sell")
             sharesHeld -= transaction.amount;
     }
+    return sharesHeld;
+}
+
+export async function getStockHistory(stockSymbol: string, startDate: string, endDate: string){
+    const transactions = getTransactionBySymbol(stockSymbol);
+    const transactionsUntilStartDate = transactions.filter(t => t.date < startDate)
+    let sharesHeld = getStockShares(transactionsUntilStartDate);
+
+    const portfolioValueByDate: { [date: string]: number } = {};
     let prices = await getRangeStockPrice(stockSymbol, new Date(startDate), new Date(endDate));
     for (const price of prices) {
         let currentTransactions = transactions.filter(t => t.date == price.date.toISOString().slice(0, 10));
-        for (const currentTransaction of currentTransactions){
-            if (currentTransaction.type == "buy")
-                sharesHeld += currentTransaction.amount;
-            if (currentTransaction.type == "sell")
-                sharesHeld -= currentTransaction.amount;
-        }
+        sharesHeld += getStockShares(currentTransactions);
         portfolioValueByDate[price.date.toISOString().slice(0,10)] = sharesHeld * price.close;
     }
     return Object.entries(portfolioValueByDate).map(([date, value]) => ({date, value}));
@@ -250,14 +251,7 @@ export async function getStockInterday(stockSymbol: string){
     const prices = await getInterDayStockPrice(stockSymbol);
     const transactions = getTransactionBySymbol(stockSymbol);
     const portfolioValueByTime: { [time: string]: number } = {};
-    let sharesHeld = 0;
-
-    for (const transaction of transactions) {
-        if (transaction.type == "buy")
-            sharesHeld += transaction.amount;
-        if (transaction.type == "sell")
-            sharesHeld -= transaction.amount;
-    }
+    let sharesHeld = getStockShares(transactions);
 
     for (const price of prices) {
         if (price.close)
