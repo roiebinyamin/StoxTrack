@@ -254,3 +254,23 @@ export async function getStockInterday(stockSymbol: string){
     }
     return Object.entries(portfolioValueByTime).map(([date, value]) => ({date, value}));
 }
+
+export async function getStockTodayGain(stockSymbol: string){
+    const now = new Date();
+    const price = await getDayStockPrice(stockSymbol, now);
+    if (!price || price.date.toISOString() != new Date(Date.now()).toISOString()) {
+        console.log("The stock Market is closed now")
+        return 0;
+    }
+    else {
+        const transactions = getTransactionBySymbol(stockSymbol);
+        const sharesHeld = getStockShares(transactions);
+        const todayPrice = await getCurrentStockPrice(stockSymbol);
+        const yesterdayPrice = await getDayStockPrice(stockSymbol, new Date(new Date().setDate(new Date().getDate() - 1)));
+        if (!todayPrice)
+            throw new Error("No price found for today");
+        if (!yesterdayPrice)
+            throw new Error("No price found for yesterday");
+        return sharesHeld * (todayPrice - yesterdayPrice.close);
+    }
+}
