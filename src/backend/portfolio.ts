@@ -215,6 +215,16 @@ export async function getPortfolioInterday(){
     return Object.entries(portfolioValueByTime).map(([date, value]) => ({date, value}));
 }
 
+export async function getPortfolioTodayGain(){
+    let totalGain = 0;
+    const transactions = getTransactions();
+    const stockSymbols = Array.from(new Set(transactions.map(t => t.stockSymbol)));
+    for (const stockSymbol of stockSymbols) {
+        totalGain += await getStockTodayGain(stockSymbol);
+    }
+    return totalGain;
+}
+
 //stock functions
 function getStockShares(transactions: Transaction[]){
     let sharesHeld = 0;
