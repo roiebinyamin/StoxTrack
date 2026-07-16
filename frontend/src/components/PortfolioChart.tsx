@@ -67,6 +67,7 @@ function PortfolioChart({data, onRangeChange, firstDate} : {data: PortfolioPoint
                         onChange={(e) => setCustomEndDate(e.target.value)}
                     />
                     <button onClick={() => {
+                        setShowCustomDatesForm(!showCustomDatesForm)
                         if (customFirstDate > customEndDate) {
                             console.log("First date cannot be after end date")
                         }

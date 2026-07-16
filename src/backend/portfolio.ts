@@ -288,7 +288,6 @@ export async function getTodayStockGain(stockSymbol: string){
         return 0;
     }
     if (!await isMarketOpen(stockSymbol)) {
-        console.log("The stock Market is closed now")
         return 0;
     }
     else {
