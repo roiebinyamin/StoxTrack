@@ -14,7 +14,7 @@ export async function buyUserStock(stockSymbol: string, amount: number, date: st
     const price = await getDayStockPrice(stockSymbol, new Date(date));
     if (!price)
         throw new Error("No price found");
-    addTransaction(stockSymbol, amount, date, price.close, "buy")
+    addTransaction(stockSymbol, amount, date, price.close!, "buy")
 }
 
 export async function sellUserStock(stockSymbol: string, amount: number, date: string) {
@@ -33,7 +33,7 @@ export async function sellUserStock(stockSymbol: string, amount: number, date: s
         const price = await getDayStockPrice(stockSymbol, new Date(date));
         if (!price)
             throw new Error("No price found");
-        addTransaction(stockSymbol, amount, date, price.close, "sell")
+        addTransaction(stockSymbol, amount, date, price.close!, "sell")
     }
 }
 
@@ -48,7 +48,7 @@ export async function updateUserStock(id: number, newType: string, newAmount: nu
     const newPrice = await getDayStockPrice(symbol,new Date(newDate))
     if (!newPrice)
         throw new Error("No price found!")
-        updateTransaction(id, newAmount, newDate, newPrice.close, newType)
+        updateTransaction(id, newAmount, newDate, newPrice.close!, newType)
 }
 
 export function deleteUserStock(id: number){
@@ -200,7 +200,7 @@ export async function getPortfolioHistory(startDate: string, endDate: string){
         for (const price of prices) {
             let currentTransactions = transactions.filter(t => t.stockSymbol == stockSymbol && t.date == price.date.toISOString().slice(0, 10));
             sharesHeld[stockSymbol] = (sharesHeld[stockSymbol] ?? 0) + getStockShares(currentTransactions);
-            portfolioValueByDate[price.date.toISOString().slice(0,10)] = (portfolioValueByDate[price.date.toISOString().slice(0,10)] ?? 0) + sharesHeld[stockSymbol]! * price.close;
+            portfolioValueByDate[price.date.toISOString().slice(0,10)] = (portfolioValueByDate[price.date.toISOString().slice(0,10)] ?? 0) + sharesHeld[stockSymbol]! * price.close!;
         }
     }
     return Object.entries(portfolioValueByDate).map(([date, value]) => ({date, value}));
@@ -262,7 +262,7 @@ export async function getStockHistory(stockSymbol: string, startDate: string, en
     for (const price of prices) {
         let currentTransactions = transactions.filter(t => t.date == price.date.toISOString().slice(0, 10));
         sharesHeld += getStockShares(currentTransactions);
-        portfolioValueByDate[price.date.toISOString().slice(0,10)] = sharesHeld * price.close;
+        portfolioValueByDate[price.date.toISOString().slice(0,10)] = sharesHeld * price.close!;
     }
     return Object.entries(portfolioValueByDate).map(([date, value]) => ({date, value}));
 }
@@ -299,8 +299,8 @@ export async function getTodayStockGain(stockSymbol: string){
             throw new Error("No price found for today");
         if (!yesterdayPrice)
             throw new Error("No price found for yesterday");
-        if (todayPrice == yesterdayPrice.close.toFixed(2))
+        if (todayPrice == yesterdayPrice.close!.toFixed(2))
             return 0;
-        return Number((sharesHeld * (todayPrice - yesterdayPrice.close)).toFixed(4));
+        return Number((sharesHeld * (todayPrice - yesterdayPrice.close!)).toFixed(4));
     }
 }

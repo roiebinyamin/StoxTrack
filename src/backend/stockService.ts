@@ -8,9 +8,8 @@ export async function getCurrentStockPrice(stockSymbol: string) {
 }
 
 export async function getRangeStockPrice(stockSymbol: string, startDate : Date, endDate : Date) {
-    const realEndDate = new Date(endDate.getTime() + 1000 * 60 * 60 * 24);
-    const stock = await stockGetter.historical(stockSymbol, {period1: startDate, period2: realEndDate})
-    return stock.map(x => ({ close: x.close, date: x.date}));
+    const stock = await stockGetter.chart(stockSymbol, {period1: startDate, period2: endDate , interval: "1d"})
+    return stock.quotes.map(x => ({ close: x.close, date: x.date}));
 }
 
 export async function getDayStockPrice(stockSymbol: string, date: Date) {
