@@ -102,7 +102,7 @@ function StockPage() {
             <h1>{symbol} Page!</h1>
             <StockCard key={transactions.stockSymbol} transaction={transactions} onUpdate={loadData}/>
             <br/>
-            <StockSummary todayGain={todayGain}/>
+            <StockSummary todayGain={todayGain} totalGain={Number(transactions.gain.toFixed(4))}/>
             <br/>
             <PortfolioChart data={portfolio} onRangeChange={handleRangeChange} firstDate={transactions.buyDate}/>
         </div>

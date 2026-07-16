@@ -14,7 +14,7 @@ import {
     getStockInterday,
     getPortfolioInterday,
     getTodayStockGain,
-    getTodayPortfolioGain,
+    getTodayPortfolioGain, getTotalPortfolioGain,
 } from "./portfolio.js";
 
 const app = express();
@@ -90,6 +90,11 @@ app.get('/api/todayStockGain/:symbol', async (req, res) => {
 app.get('/api/todayPortfolioGain', async (req, res) => {
     try {res.json(await getTodayPortfolioGain())}
     catch (e) {res.status(500).json({error: "Internal server error, the stock Market might not be open now"})}
+})
+
+app.get('/api/totalPortfolioGain', async (req, res) => {
+    try {res.json(await getTotalPortfolioGain())}
+    catch (e) {res.status(404).json({error: "Stock symbol not found"})}
 })
 
 app.listen(port, ()=>{

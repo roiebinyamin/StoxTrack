@@ -21,7 +21,9 @@ interface PortfolioPoint {
 function HomePage() {
     const [transactions, setTransactions] = useState<GroupedTransaction[]>([])
     const [portfolio, setPortfolio] = useState<PortfolioPoint[]>([])
+
     const [todayGain, setTodayGain] = useState<number>(0)
+    const [totalGain, setTotalGain] = useState<number>(0)
 
     const [startDate, setStartDate] = useState<string>(new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10));
     const [endDate, setEndDate] = useState<string>(new Date().toISOString().slice(0, 10));
@@ -50,6 +52,12 @@ function HomePage() {
         setTodayGain(data);
     }
 
+    async function loadTotalGain(){
+        const response = await fetch(`/api/totalPortfolioGain`);
+        const data = await response.json();
+        setTotalGain(data);
+    }
+
     function handleRangeChange(startDate: string, endDate: string) {
         setStartDate(startDate);
         setEndDate(endDate);
@@ -74,12 +82,13 @@ function HomePage() {
         setStockSymbol("");
         setBuyAmount("");
         setBuyDate("");
-        loadData();
+        await loadData();
     }
 
     useEffect(() => {
         loadData();
         loadTodayGain();
+        loadTotalGain();
     }, []);
 
     useEffect(() => {
@@ -100,7 +109,7 @@ function HomePage() {
                 </div>
             ))}
             <br/>
-            <PortfolioSummary todayGain={todayGain}/>
+            <PortfolioSummary todayGain={todayGain} totalGain={Number(totalGain.toFixed(4))}/>
             <br/>
             <PortfolioChart data={portfolio} onRangeChange={handleRangeChange} firstDate={transactions[0]?.buyDate}/>
             <br/>

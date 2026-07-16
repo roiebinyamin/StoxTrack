@@ -231,6 +231,15 @@ export async function getTodayPortfolioGain(){
     return totalGain;
 }
 
+export async function getTotalPortfolioGain(){
+    const transactions = await getGroupedTransactions();
+    let totalGain = 0;
+    for (const transaction of transactions) {
+        totalGain += transaction.gain;
+    }
+    return totalGain;
+}
+
 //stock functions
 function getStockShares(transactions: Transaction[]){
     let sharesHeld = 0;
