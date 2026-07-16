@@ -45,7 +45,7 @@ function HomePage() {
     }
 
     async function loadTodayGain(){
-        const response = await fetch(`/api/todayGain`);
+        const response = await fetch(`/api/todayPortfolioGain`);
         const data = await response.json();
         setTodayGain(data);
     }

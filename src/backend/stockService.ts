@@ -19,8 +19,11 @@ export async function getDayStockPrice(stockSymbol: string, date: Date) {
 }
 
 export async function getInterDayStockPrice(stockSymbol: string){
-    const now = new Date();
-    const prices = await stockGetter.chart(stockSymbol, {period1: new Date(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), -(now.getTimezoneOffset() / 60)), interval: "30m"})
+    let wantedStartDate = new Date();
+    let prices
+    if (! await isMarketOpen(stockSymbol))
+        wantedStartDate = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    prices = await stockGetter.chart(stockSymbol, {period1: new Date(wantedStartDate.getUTCFullYear(), wantedStartDate.getUTCMonth(), wantedStartDate.getUTCDate(), -(wantedStartDate.getTimezoneOffset() / 60)), interval: "30m"})
     return prices.quotes
 }
 
