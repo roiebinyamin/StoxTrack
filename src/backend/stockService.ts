@@ -4,12 +4,22 @@ const stockGetter = new YahooFinance({suppressNotices: ['yahooSurvey', 'ripHisto
 
 export async function getCurrentStockPrice(stockSymbol: string) {
     const stock = await stockGetter.quote(stockSymbol)
-    return stock.regularMarketPrice;
+    if (stock.currency === "USD")
+        return stock.regularMarketPrice;
+    else{
+        const currency = await stockGetter.quote(stock.currency+"=X")
+        return stock.regularMarketPrice / currency.regularMarketPrice
+    }
 }
 
 export async function getRangeStockPrice(stockSymbol: string, startDate : Date, endDate : Date) {
     const stock = await stockGetter.chart(stockSymbol, {period1: startDate, period2: endDate , interval: "1d"})
-    return stock.quotes.map(x => ({ close: x.close, date: x.date}));
+    if (stock.meta.currency === "USD")
+        return stock.quotes.map(x => ({ close: x.close, date: x.date}));
+    else{
+        const currency = await stockGetter.quote(stock.meta.currency+"=X")
+        return stock.quotes.map(x => ({ close: x.close! / currency.regularMarketPrice, date: x.date}));
+    }
 }
 
 export async function getDayStockPrice(stockSymbol: string, date: Date) {
@@ -23,7 +33,12 @@ export async function getInterDayStockPrice(stockSymbol: string){
     if (! await isMarketOpen(stockSymbol))
         wantedStartDate = new Date(Date.now() - 24 * 60 * 60 * 1000);
     prices = await stockGetter.chart(stockSymbol, {period1: new Date(wantedStartDate.getUTCFullYear(), wantedStartDate.getUTCMonth(), wantedStartDate.getUTCDate(), -(wantedStartDate.getTimezoneOffset() / 60)), interval: "30m"})
-    return prices.quotes
+    if (prices.meta.currency === "USD")
+        return prices.quotes.map(x => ({ close: x.close, date: x.date}));
+    else{
+        const currency = await stockGetter.quote(prices.meta.currency+"=X")
+        return prices.quotes.map(x => ({ close: x.close! / currency.regularMarketPrice, date: x.date}));
+    }
 }
 
 export async function isMarketOpen(stockSymbol: string){
