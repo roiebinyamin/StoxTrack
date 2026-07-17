@@ -6,7 +6,7 @@ interface PortfolioPoint {
     value: number;
 }
 
-function PortfolioChart({data, onRangeChange, firstDate} : {data: PortfolioPoint[], onRangeChange: (startDate: string, endDate: string) => void, firstDate: string }) {
+function PortfolioChart({data, onRangeChange, firstDate, exchangeRate} : {data: PortfolioPoint[], onRangeChange: (startDate: string, endDate: string) => void, firstDate: string, exchangeRate: number }) {
     const [showCustomDatesForm, setShowCustomDatesForm] = useState(false)
 
     const [customFirstDate, setCustomFirstDate] = useState<string>(firstDate)
@@ -20,6 +20,8 @@ function PortfolioChart({data, onRangeChange, firstDate} : {data: PortfolioPoint
         else
             return wantedDate
     }
+
+    const convertedData = data.map(d =>({ ...d, value: d.value * exchangeRate}))
 
     return (
         <div>
@@ -81,7 +83,7 @@ function PortfolioChart({data, onRangeChange, firstDate} : {data: PortfolioPoint
             )}
 
             <div style={{display: "flex", justifyContent: "center"}}>
-                <LineChart width={1000} height={600} data={data}>
+                <LineChart width={1000} height={600} data={convertedData}>
                     {/*<CartesianGrid />*/}
                     <XAxis dataKey="date"/>
                     <YAxis dataKey="value" domain={['dataMin - 1', 'dataMax + 1']} tickFormatter={x => x.toFixed(2)}/>

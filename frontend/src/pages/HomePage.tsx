@@ -1,7 +1,8 @@
-import {useEffect, useState} from "react"
+import {useEffect, useState, useContext} from "react"
 import {Link} from "react-router-dom"
 import PortfolioChart from "../components/PortfolioChart.tsx";
 import PortfolioSummary from "../components/PortfolioSummary.tsx";
+import {CurrencyContext} from "../App.tsx";
 
 interface GroupedTransaction {
     stockSymbol: string
@@ -29,6 +30,9 @@ function HomePage() {
 
     const [startDate, setStartDate] = useState<string>(new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10));
     const [endDate, setEndDate] = useState<string>(new Date().toISOString().slice(0, 10));
+
+    const {currency} = useContext(CurrencyContext);
+    const [exchangeRate, setExchangeRate] = useState<number>(1);
 
     async function loadData() {
         const response = await fetch('/api/groupedTransactions');
@@ -70,6 +74,12 @@ function HomePage() {
         const response = await fetch(`/api/totalBestStock`);
         const data = await response.json();
         setTotalBestStock(data);
+    }
+
+    async function updateExchangeRate() {
+        const response = await fetch(`/api/currencyExchangeRate/${currency}`);
+        const data = await response.json();
+        setExchangeRate(data);
     }
 
     function handleRangeChange(startDate: string, endDate: string) {
@@ -114,6 +124,10 @@ function HomePage() {
             loadPortfolioInterday();
     }, [startDate, endDate]);
 
+    useEffect(()=> {
+            updateExchangeRate();
+    }, [currency])
+
     return (
         <div>
             <title>StoxTrack</title>
@@ -125,9 +139,9 @@ function HomePage() {
                 </div>
             ))}
             <br/>
-            <PortfolioSummary todayGain={todayGain} totalGain={Number(totalGain.toFixed(4))} todayBestStock={todayBestStock} totalBestStock={totalBestStock}/>
+            <PortfolioSummary todayGain={todayGain} totalGain={Number(totalGain.toFixed(4))} todayBestStock={todayBestStock} totalBestStock={totalBestStock} exchangeRate={exchangeRate}/>
             <br/>
-            <PortfolioChart data={portfolio} onRangeChange={handleRangeChange} firstDate={transactions[0]?.buyDate}/>
+            <PortfolioChart data={portfolio} onRangeChange={handleRangeChange} firstDate={transactions[0]?.buyDate} exchangeRate={exchangeRate}/>
             <br/>
             <button onClick={() => setShowBuyForm(!showBuyForm)}>Create new Investment</button>
             {showBuyForm && (

@@ -7,7 +7,8 @@ import {
     getRangeStockPrice,
     getDayStockPrice,
     getInterDayStockPrice,
-    isMarketOpen
+    isMarketOpen,
+    getExchangeRate,
 } from "./stockService.js"
 
 export async function buyUserStock(stockSymbol: string, amount: number, date: string){
@@ -176,6 +177,10 @@ export function getAllTransactionsWithSymbol(stockSymbol: string){
     return getTransactionBySymbol(stockSymbol);
 }
 
+export async function getCurrencyExchangeRate(currency: string) {
+    return await getExchangeRate(currency);
+}
+
 //portfolio functions
 function getPortfolioShares(transactions: Transaction[]){
     const sharesHeld: { [stockSymbol: string]: number } = {};
@@ -257,7 +262,6 @@ export async function getTodayBestStock(){
 
 export async function getTotalBestStock(){
     const transactions = await getGroupedTransactions()
-    const stocksGains = transactions.map(t => {t.stockSymbol, t.gain});
     let bestGain = 0;
     let bestStock = "no stock has earned any money so far";
     for (const stock of transactions) {
@@ -329,7 +333,7 @@ export async function getTodayStockGain(stockSymbol: string){
             throw new Error("No price found for today");
         if (!yesterdayPrice)
             throw new Error("No price found for yesterday");
-        if (todayPrice == yesterdayPrice.close!.toFixed(2))
+        if (todayPrice == Number(yesterdayPrice.close!.toFixed(2)))
             return 0;
         return Number((sharesHeld * (todayPrice - yesterdayPrice.close!)).toFixed(4));
     }
