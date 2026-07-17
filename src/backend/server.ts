@@ -14,7 +14,10 @@ import {
     getStockInterday,
     getPortfolioInterday,
     getTodayStockGain,
-    getTodayPortfolioGain, getTotalPortfolioGain,
+    getTodayPortfolioGain,
+    getTotalPortfolioGain,
+    getTodayBestStock,
+    getTotalBestStock,
 } from "./portfolio.js";
 
 const app = express();
@@ -95,6 +98,14 @@ app.get('/api/todayPortfolioGain', async (req, res) => {
 app.get('/api/totalPortfolioGain', async (req, res) => {
     try {res.json(await getTotalPortfolioGain())}
     catch (e) {res.status(404).json({error: "Stock symbol not found"})}
+})
+
+app.get('/api/todayBestStock', async (req, res) => {
+    res.json(await getTodayBestStock());
+})
+
+app.get('/api/totalBestStock', async (req, res) => {
+    res.json(await getTotalBestStock());
 })
 
 app.listen(port, ()=>{

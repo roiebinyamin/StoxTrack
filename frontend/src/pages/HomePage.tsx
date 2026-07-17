@@ -24,6 +24,8 @@ function HomePage() {
 
     const [todayGain, setTodayGain] = useState<number>(0)
     const [totalGain, setTotalGain] = useState<number>(0)
+    const [todayBestStock, setTodayBestStock] = useState<string>("")
+    const [totalBestStock, setTotalBestStock] = useState<string>("")
 
     const [startDate, setStartDate] = useState<string>(new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10));
     const [endDate, setEndDate] = useState<string>(new Date().toISOString().slice(0, 10));
@@ -58,6 +60,18 @@ function HomePage() {
         setTotalGain(data);
     }
 
+    async function loadTodayBestStock(){
+        const response = await fetch(`/api/todayBestStock`);
+        const data = await response.json();
+        setTodayBestStock(data);
+    }
+
+    async function loadTotalBestStock(){
+        const response = await fetch(`/api/totalBestStock`);
+        const data = await response.json();
+        setTotalBestStock(data);
+    }
+
     function handleRangeChange(startDate: string, endDate: string) {
         setStartDate(startDate);
         setEndDate(endDate);
@@ -89,6 +103,8 @@ function HomePage() {
         loadData();
         loadTodayGain();
         loadTotalGain();
+        loadTodayBestStock();
+        loadTotalBestStock();
     }, []);
 
     useEffect(() => {
@@ -109,7 +125,7 @@ function HomePage() {
                 </div>
             ))}
             <br/>
-            <PortfolioSummary todayGain={todayGain} totalGain={Number(totalGain.toFixed(4))}/>
+            <PortfolioSummary todayGain={todayGain} totalGain={Number(totalGain.toFixed(4))} todayBestStock={todayBestStock} totalBestStock={totalBestStock}/>
             <br/>
             <PortfolioChart data={portfolio} onRangeChange={handleRangeChange} firstDate={transactions[0]?.buyDate}/>
             <br/>

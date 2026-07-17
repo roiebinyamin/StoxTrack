@@ -240,6 +240,36 @@ export async function getTotalPortfolioGain(){
     return totalGain;
 }
 
+export async function getTodayBestStock(){
+    const transactions = getTransactions();
+    const stockSymbols = Array.from(new Set(transactions.map(t => t.stockSymbol)));
+    let bestGain = 0;
+    let bestStock = "no stock has earned any money today";
+    for (const stockSymbol of stockSymbols) {
+        let gain = await getTodayStockGain(stockSymbol);
+        if (gain > bestGain){
+            bestGain = gain;
+            bestStock = stockSymbol;
+        }
+    }
+    return bestStock;
+}
+
+export async function getTotalBestStock(){
+    const transactions = await getGroupedTransactions()
+    const stocksGains = transactions.map(t => {t.stockSymbol, t.gain});
+    let bestGain = 0;
+    let bestStock = "no stock has earned any money so far";
+    for (const stock of transactions) {
+        let gain = stock.gain;
+        if (gain > bestGain){
+            bestGain = gain;
+            bestStock = stock.stockSymbol;
+        }
+    }
+    return bestStock;
+}
+
 //stock functions
 function getStockShares(transactions: Transaction[]){
     let sharesHeld = 0;
