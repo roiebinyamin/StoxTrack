@@ -2,24 +2,23 @@ import YahooFinance from "yahoo-finance2"
 
 const stockGetter = new YahooFinance({suppressNotices: ['yahooSurvey', 'ripHistorical']});
 
+export async function getExchangeRate(currency: string) {
+    if (currency === "USD")
+        return 1;
+    else{
+        const currencyData = await stockGetter.quote(currency+"=X")
+        return currencyData.regularMarketPrice
+    }
+}
+
 export async function getCurrentStockPrice(stockSymbol: string) {
     const stock = await stockGetter.quote(stockSymbol)
-    if (stock.currency === "USD")
-        return stock.regularMarketPrice;
-    else{
-        const currency = await stockGetter.quote(stock.currency+"=X")
-        return stock.regularMarketPrice / currency.regularMarketPrice
-    }
+    return stock.regularMarketPrice / await getExchangeRate(stock.currency)
 }
 
 export async function getRangeStockPrice(stockSymbol: string, startDate : Date, endDate : Date) {
     const stock = await stockGetter.chart(stockSymbol, {period1: startDate, period2: endDate , interval: "1d"})
-    if (stock.meta.currency === "USD")
-        return stock.quotes.map(x => ({ close: x.close, date: x.date}));
-    else{
-        const currency = await stockGetter.quote(stock.meta.currency+"=X")
-        return stock.quotes.map(x => ({ close: x.close! / currency.regularMarketPrice, date: x.date}));
-    }
+    return await Promise.all(stock.quotes.map(async x => ({ close: x.close! / await getExchangeRate(stock.meta.currency), date: x.date})));
 }
 
 export async function getDayStockPrice(stockSymbol: string, date: Date) {
@@ -33,12 +32,7 @@ export async function getInterDayStockPrice(stockSymbol: string){
     if (! await isMarketOpen(stockSymbol))
         wantedStartDate = new Date(Date.now() - 24 * 60 * 60 * 1000);
     prices = await stockGetter.chart(stockSymbol, {period1: new Date(wantedStartDate.getUTCFullYear(), wantedStartDate.getUTCMonth(), wantedStartDate.getUTCDate(), -(wantedStartDate.getTimezoneOffset() / 60)), interval: "30m"})
-    if (prices.meta.currency === "USD")
-        return prices.quotes.map(x => ({ close: x.close, date: x.date}));
-    else{
-        const currency = await stockGetter.quote(prices.meta.currency+"=X")
-        return prices.quotes.map(x => ({ close: x.close! / currency.regularMarketPrice, date: x.date}));
-    }
+    return await Promise.all(prices.quotes.map(async x => ({ close: x.close! / await getExchangeRate(prices.meta.currency), date: x.date})));
 }
 
 export async function isMarketOpen(stockSymbol: string){
