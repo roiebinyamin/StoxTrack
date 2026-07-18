@@ -1,9 +1,11 @@
 import {useState, useContext} from 'react';
-import {CurrencyContext} from "../App.tsx";
+import {CurrencyContext, LightModeContext} from "../App.tsx";
 
 function HamburgerMenu() {
     const [showMenu, setShowMenu] = useState(false);
+
     const {currency, setCurrency} = useContext(CurrencyContext);
+    const {lightMode, setLightMode} = useContext(LightModeContext);
 
     const currencies = ["USD", "ILS", "EUR", "GBP", "JPY"]
 
@@ -19,6 +21,7 @@ function HamburgerMenu() {
                             <option key={c} value={c}>{c}</option>
                         ))}
                     </select>
+                    <button onClick={() => setLightMode(!lightMode)}>{lightMode ? "Dark Mode" : "Light Mode"}</button>
                 </div>
             )}
         </div>

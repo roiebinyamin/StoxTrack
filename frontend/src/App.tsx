@@ -9,17 +9,27 @@ interface CurrencyContextType {
     setCurrency: (currency: string) => void
 }
 
+interface LightModeType {
+    lightMode: boolean,
+    setLightMode: (lightMode: boolean) => void
+}
+
 export const CurrencyContext = createContext<CurrencyContextType>({currency: "USD", setCurrency: () => {}})
+
+export const LightModeContext = createContext<LightModeType>({lightMode: false, setLightMode: () => {}})
 
 function App() {
     const [currency, setCurrency] = useState("USD")
+    const [lightMode, setLightMode] = useState(false)
     return (
         <CurrencyContext.Provider value={{currency, setCurrency}}>
-            <HamburgerMenu/>
-            <Routes>
-                <Route path="/" element={<HomePage />} />
-                <Route path="/stock/:symbol" element={<StockPage />} />
-            </Routes>
+            <LightModeContext.Provider value={{lightMode, setLightMode}}>
+                <HamburgerMenu/>
+                <Routes>
+                    <Route path="/" element={<HomePage />} />
+                    <Route path="/stock/:symbol" element={<StockPage />} />
+                </Routes>
+            </LightModeContext.Provider>
         </CurrencyContext.Provider>
     )
 }
