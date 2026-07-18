@@ -1,7 +1,7 @@
 import {Routes ,Route} from 'react-router-dom'
 import HomePage from "./pages/HomePage.tsx";
 import StockPage from "./pages/StockPage.tsx";
-import {createContext, useState} from "react";
+import {createContext, useState, useEffect} from "react";
 import HamburgerMenu from "./components/HamburgerMenu.tsx";
 
 interface CurrencyContextType {
@@ -21,6 +21,11 @@ export const LightModeContext = createContext<LightModeType>({lightMode: false, 
 function App() {
     const [currency, setCurrency] = useState("USD")
     const [lightMode, setLightMode] = useState(false)
+
+    useEffect(()=> {
+        document.body.className = lightMode ? "light-mode" : "dark-mode";
+    }, [lightMode])
+
     return (
         <CurrencyContext.Provider value={{currency, setCurrency}}>
             <LightModeContext.Provider value={{lightMode, setLightMode}}>
