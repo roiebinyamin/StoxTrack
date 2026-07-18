@@ -1,8 +1,9 @@
 import {useParams} from "react-router-dom";
-import {useState, useEffect} from "react";
+import {useState, useEffect, useContext} from "react";
 import StockCard from "../components/StockCard.tsx";
 import PortfolioChart from "../components/PortfolioChart.tsx";
 import StockSummary from "../components/StockSummary.tsx";
+import {CurrencyContext} from "../App.tsx";
 
 interface GroupedTransaction {
     stockSymbol: string
@@ -29,6 +30,9 @@ function StockPage() {
 
     const [startDate, setStartDate] = useState<string>(new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10));
     const [endDate, setEndDate] = useState<string>(new Date().toISOString().slice(0, 10));
+
+    const {currency} = useContext(CurrencyContext);
+    const [exchangeRate, setExchangeRate] = useState<number>(1);
 
     async function loadData() {
         const response = await fetch(`/api/groupedTransactions/${symbol}`);
@@ -58,6 +62,12 @@ function StockPage() {
         setTodayGain(data);
     }
 
+    async function updateExchangeRate() {
+        const response = await fetch(`/api/currencyExchangeRate/${currency}`);
+        const data = await response.json();
+        setExchangeRate(data);
+    }
+
     function handleRangeChange(startDate: string, endDate: string) {
         setStartDate(startDate);
         setEndDate(endDate);
@@ -78,6 +88,10 @@ function StockPage() {
         else
             loadStockInterday();
     }, [startDate, endDate]);
+
+    useEffect(() => {
+            updateExchangeRate();
+    }, [currency]);
 
     if (notFound) {
         return (
@@ -100,11 +114,11 @@ function StockPage() {
         <div>
             <title>{symbol} - StoxTrack</title>
             <h1>{symbol} Page!</h1>
-            <StockCard key={transactions.stockSymbol} transaction={transactions} onUpdate={loadData}/>
+            <StockCard key={transactions.stockSymbol} transaction={transactions} onUpdate={loadData} exchangeRate={exchangeRate}/>
             <br/>
-            <StockSummary todayGain={todayGain} totalGain={Number(transactions.gain.toFixed(4))}/>
+            <StockSummary todayGain={todayGain} totalGain={Number(transactions.gain.toFixed(4))} exchangeRate={exchangeRate}/>
             <br/>
-            <PortfolioChart data={portfolio} onRangeChange={handleRangeChange} firstDate={transactions.buyDate}/>
+            <PortfolioChart data={portfolio} onRangeChange={handleRangeChange} firstDate={transactions.buyDate} exchangeRate={exchangeRate}/>
         </div>
     )
 }

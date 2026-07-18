@@ -22,9 +22,10 @@ interface StockEvent {
 interface StockCardProps {
     transaction: GroupedTransaction;
     onUpdate: () => void;
+    exchangeRate: number;
 }
 
-function StockCard({transaction, onUpdate}: StockCardProps) {
+function StockCard({transaction, onUpdate, exchangeRate}: StockCardProps) {
     const [showBuyForm, setShowBuyForm] = useState(false);
     const [buyAmount, setBuyAmount] = useState<number | "">("")
     const [buyDate, setBuyDate] = useState("");
@@ -113,8 +114,8 @@ function StockCard({transaction, onUpdate}: StockCardProps) {
         <>
             <div>
             <h2>{transaction.stockSymbol}</h2>
-            <p>Shares owned: {transaction.amount.toFixed(4)}, Total money invested: {transaction.totalInvested.toFixed(4)}, Start of investing: {transaction.buyDate}</p>
-            <p>Current money: {transaction.currentValue.toFixed(4)}, Total money sold: {transaction.totalSold.toFixed(4)}, Total gain: {transaction.gain.toFixed(4)}</p>
+            <p>Shares owned: {transaction.amount.toFixed(4)}, Total money invested: {(Number(transaction.totalInvested) * exchangeRate).toFixed(4)}, Start of investing: {transaction.buyDate}</p>
+            <p>Current money: {(Number(transaction.currentValue) * exchangeRate).toFixed(4)}, Total money sold: {(transaction.totalSold * exchangeRate).toFixed(4)}, Total gain: {(transaction.gain * exchangeRate).toFixed(4)}</p>
             <button onClick={() => {setShowBuyForm(!showBuyForm);setShowSellForm(false);setShowHistory(false)}}>Buy</button>
             {showBuyForm && (
                 <div>

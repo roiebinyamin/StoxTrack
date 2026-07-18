@@ -21,7 +21,7 @@ function PortfolioChart({data, onRangeChange, firstDate, exchangeRate} : {data: 
             return wantedDate
     }
 
-    const convertedData = data.map(d =>({ ...d, value: d.value * exchangeRate}))
+    const convertedData = data.map(d =>({ ...d, value: (d.value * exchangeRate)}))
 
     return (
         <div>

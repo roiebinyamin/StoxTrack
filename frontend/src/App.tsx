@@ -2,6 +2,7 @@ import {Routes ,Route} from 'react-router-dom'
 import HomePage from "./pages/HomePage.tsx";
 import StockPage from "./pages/StockPage.tsx";
 import {createContext, useState} from "react";
+import HamburgerMenu from "./components/HamburgerMenu.tsx";
 
 interface CurrencyContextType {
     currency: string,
@@ -14,6 +15,7 @@ function App() {
     const [currency, setCurrency] = useState("USD")
     return (
         <CurrencyContext.Provider value={{currency, setCurrency}}>
+            <HamburgerMenu/>
             <Routes>
                 <Route path="/" element={<HomePage />} />
                 <Route path="/stock/:symbol" element={<StockPage />} />
