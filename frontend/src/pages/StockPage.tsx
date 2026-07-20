@@ -4,6 +4,7 @@ import StockCard from "../components/StockCard.tsx";
 import PortfolioChart from "../components/PortfolioChart.tsx";
 import StockSummary from "../components/StockSummary.tsx";
 import {CurrencyContext} from "../App.tsx";
+import {ONE_DAY} from "../../../src/backend/constants.ts";
 
 interface GroupedTransaction {
     stockSymbol: string
@@ -28,7 +29,7 @@ function StockPage() {
     const [transactions, setTransactions] = useState<GroupedTransaction>()
     const [notFound, setNotFound] = useState(false)
 
-    const [startDate, setStartDate] = useState<string>(new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10));
+    const [startDate, setStartDate] = useState<string>(new Date(Date.now() - 7 * ONE_DAY).toISOString().slice(0, 10));
     const [endDate, setEndDate] = useState<string>(new Date().toISOString().slice(0, 10));
 
     const {currency} = useContext(CurrencyContext);

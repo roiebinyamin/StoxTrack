@@ -10,6 +10,7 @@ import {
     isMarketOpen,
     getExchangeRate,
 } from "./stockService.js"
+import {ONE_DAY} from "./constants.js";
 
 export async function buyUserStock(stockSymbol: string, amount: number, date: string){
     const price = await getDayStockPrice(stockSymbol, new Date(date));
@@ -328,7 +329,7 @@ export async function getTodayStockGain(stockSymbol: string){
         const transactions = getTransactionBySymbol(stockSymbol);
         const sharesHeld = getStockShares(transactions);
         const todayPrice = await getCurrentStockPrice(stockSymbol);
-        const yesterdayPrice = await getDayStockPrice(stockSymbol, new Date(now.getTime() - 24 * 60 * 60 * 1000));
+        const yesterdayPrice = await getDayStockPrice(stockSymbol, new Date(now.getTime() - ONE_DAY));
         if (!todayPrice)
             throw new Error("No price found for today");
         if (!yesterdayPrice)

@@ -1,5 +1,6 @@
 import {LineChart, XAxis, YAxis, Tooltip, Line } from "recharts";
 import {useState} from "react";
+import {ONE_DAY} from "../../../src/backend/constants.ts";
 
 interface PortfolioPoint {
     date: string;
@@ -30,7 +31,7 @@ function PortfolioChart({data, onRangeChange, firstDate, exchangeRate} : {data: 
             }}>Day</button>
 
             <button onClick={() => {
-                    onRangeChange(getClampedStartDate(new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().slice(0,10)), todayDate)
+                    onRangeChange(getClampedStartDate(new Date(Date.now() - 7 * ONE_DAY).toISOString().slice(0,10)), todayDate)
             }}>Week</button>
 
             <button onClick={() => {
@@ -42,11 +43,11 @@ function PortfolioChart({data, onRangeChange, firstDate, exchangeRate} : {data: 
             }}>YTD</button>
 
             <button onClick={() => {
-                    onRangeChange(getClampedStartDate(new Date(Date.now() - 365 * 24 *60 * 60 *1000).toISOString().slice(0,10)), todayDate)
+                    onRangeChange(getClampedStartDate(new Date(Date.now() - 365 * ONE_DAY).toISOString().slice(0,10)), todayDate)
             }}>1 Year</button>
 
             <button onClick={() => {
-                    onRangeChange(getClampedStartDate(new Date(Date.now() - 5 * 365 * 24 * 60 * 60 * 1000).toISOString().slice(0,10)), todayDate)
+                    onRangeChange(getClampedStartDate(new Date(Date.now() - 5 * 365 * ONE_DAY).toISOString().slice(0,10)), todayDate)
             }}>5 Year</button>
 
             <button onClick={() => {

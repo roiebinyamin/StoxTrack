@@ -3,6 +3,7 @@ import {Link} from "react-router-dom"
 import PortfolioChart from "../components/PortfolioChart.tsx";
 import PortfolioSummary from "../components/PortfolioSummary.tsx";
 import {CurrencyContext} from "../App.tsx";
+import {ONE_DAY} from "../../../src/backend/constants.ts";
 
 interface GroupedTransaction {
     stockSymbol: string
@@ -28,7 +29,7 @@ function HomePage() {
     const [todayBestStock, setTodayBestStock] = useState<string>("")
     const [totalBestStock, setTotalBestStock] = useState<string>("")
 
-    const [startDate, setStartDate] = useState<string>(new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10));
+    const [startDate, setStartDate] = useState<string>(new Date(Date.now() - 7 * ONE_DAY).toISOString().slice(0, 10));
     const [endDate, setEndDate] = useState<string>(new Date().toISOString().slice(0, 10));
 
     const {currency} = useContext(CurrencyContext);
