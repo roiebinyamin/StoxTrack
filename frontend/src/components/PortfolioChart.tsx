@@ -38,6 +38,10 @@ function PortfolioChart({data, onRangeChange, firstDate, exchangeRate} : {data: 
                     onRangeChange(getClampedStartDate(new Date(new Date().setMonth(new Date().getMonth() -1)).toISOString().slice(0,10)), todayDate)
             }}>Month</button>
 
+            <button onClick={()=> {
+                onRangeChange(getClampedStartDate(new Date(new Date().setMonth(new Date().getMonth() - 6)).toISOString().slice(0,10)), todayDate)
+            }}>6 Month</button>
+
             <button onClick={() => {
                     onRangeChange(getClampedStartDate(new Date(new Date().getFullYear(), 0, 1).toISOString().slice(0, 10)), todayDate)
             }}>YTD</button>
