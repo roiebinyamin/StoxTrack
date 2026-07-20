@@ -333,8 +333,8 @@ export async function getTodayStockGain(stockSymbol: string){
             throw new Error("No price found for today");
         if (!yesterdayPrice)
             throw new Error("No price found for yesterday");
-        if (todayPrice == Number(yesterdayPrice.close!.toFixed(2)))
+        if (todayPrice == Number(yesterdayPrice.close!))
             return 0;
-        return Number((sharesHeld * (todayPrice - yesterdayPrice.close!)).toFixed(4));
+        return Number((sharesHeld * (todayPrice - yesterdayPrice.close!)));
     }
 }

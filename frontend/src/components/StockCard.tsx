@@ -156,10 +156,10 @@ function StockCard({transaction, onUpdate, exchangeRate}: StockCardProps) {
                     {history.map(t => (
                         <React.Fragment key={`${t.id}-${t.type}`}>
                             {t.type == "buy" &&
-                                <p style={{color:"limegreen"}}>{t.date} - {t.amount.toFixed(2)} shares of {transaction.stockSymbol} was bought at {t.price.toFixed(2)} for {(t.amount * t.price).toFixed(2)}</p>
+                                <p style={{color:"limegreen"}}>{t.date} - {t.amount.toFixed(4)} shares of {transaction.stockSymbol} was bought at {t.price.toFixed(4)} for {(t.amount * t.price).toFixed(4)}</p>
                             }
                             {t.type == "sell" &&
-                                <p style={{color:"red"}}>{t.date} - {t.amount.toFixed(2)} shares of {transaction.stockSymbol} was sold at {t.price.toFixed(2)} for {(t.amount * t.price).toFixed(2)}</p>
+                                <p style={{color:"red"}}>{t.date} - {t.amount.toFixed(4)} shares of {transaction.stockSymbol} was sold at {t.price.toFixed(4)} for {(t.amount * t.price).toFixed(4)}</p>
                             }
                             <button onClick={() => {setUpdateId(t.id);setUpdateType(t.type);setUpdatedAmount(t.amount);setUpdatedDate(t.date)}}>Update</button>
                             {updateId === t.id && t.type === updateType &&(

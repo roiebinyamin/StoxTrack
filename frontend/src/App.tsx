@@ -19,7 +19,7 @@ export const CurrencyContext = createContext<CurrencyContextType>({currency: "US
 export const LightModeContext = createContext<LightModeType>({lightMode: false, setLightMode: () => {}})
 
 function App() {
-    const [currency, setCurrency] = useState("USD")
+    const [currency, setCurrency] = useState("ILS")
     const [lightMode, setLightMode] = useState(false)
 
     useEffect(()=> {
