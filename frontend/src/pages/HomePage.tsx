@@ -87,6 +87,14 @@ function HomePage() {
         setEndDate(endDate);
     }
 
+    async function setEverything(){
+        await loadData();
+        await loadTodayGain();
+        await loadTotalGain();
+        await loadTodayBestStock();
+        await loadTotalBestStock();
+    }
+
     const [showBuyForm, setShowBuyForm] = useState(false);
     const [buyAmount, setBuyAmount] = useState<number | "">("")
     const [buyDate, setBuyDate] = useState("");
@@ -106,15 +114,11 @@ function HomePage() {
         setStockSymbol("");
         setBuyAmount("");
         setBuyDate("");
-        await loadData();
+        await setEverything();
     }
 
     useEffect(() => {
-        loadData();
-        loadTodayGain();
-        loadTotalGain();
-        loadTodayBestStock();
-        loadTotalBestStock();
+        setEverything();
     }, []);
 
     useEffect(() => {
