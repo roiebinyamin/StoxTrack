@@ -11,7 +11,9 @@ function Panel({children, heightPer, widthPer}: {children: ReactNode, heightPer:
                 width: widthPer,
                 backgroundColor: "#212121",
                 borderRadius: "1%",
-                padding: "1%"
+                padding: "1%",
+                borderColor: "#1e1e1f",
+                borderStyle: "solid"
             }}>
                 {children}
             </div>
@@ -25,7 +27,9 @@ function Panel({children, heightPer, widthPer}: {children: ReactNode, heightPer:
                 width: widthPer,
                 backgroundColor: "#d0d3d6",
                 borderRadius: "1%",
-                padding: "1%"
+                padding: "1%",
+                borderColor: "#c2c4c6",
+                borderStyle: "solid"
             }}>
                 {children}
             </div>
