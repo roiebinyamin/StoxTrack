@@ -146,7 +146,6 @@ function HomePage() {
             ))}
             <br/>
             <PortfolioSummary todayGain={todayGain} totalGain={Number(totalGain.toFixed(4))} todayBestStock={todayBestStock} totalBestStock={totalBestStock} exchangeRate={exchangeRate}/>
-            <br/>
             <PortfolioChart data={portfolio} onRangeChange={handleRangeChange} firstDate={transactions[0]?.buyDate} exchangeRate={exchangeRate}/>
             <br/>
             <button onClick={() => setShowBuyForm(!showBuyForm)}>Create new Investment</button>

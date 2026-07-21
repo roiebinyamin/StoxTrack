@@ -119,7 +119,6 @@ function StockPage() {
             <StockCard key={transactions.stockSymbol} transaction={transactions} onUpdate={loadData} exchangeRate={exchangeRate}/>
             <br/>
             <StockSummary todayGain={todayGain} totalGain={Number(transactions.gain.toFixed(4))} exchangeRate={exchangeRate}/>
-            <br/>
             <PortfolioChart data={portfolio} onRangeChange={handleRangeChange} firstDate={transactions.buyDate} exchangeRate={exchangeRate}/>
         </PageContainer>
     )
