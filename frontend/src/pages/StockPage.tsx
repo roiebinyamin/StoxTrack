@@ -5,6 +5,7 @@ import PortfolioChart from "../components/PortfolioChart.tsx";
 import StockSummary from "../components/StockSummary.tsx";
 import {CurrencyContext} from "../App.tsx";
 import {ONE_DAY} from "../../../src/backend/constants.ts";
+import PageContainer from "../components/PageContainer.tsx";
 
 interface GroupedTransaction {
     stockSymbol: string
@@ -112,7 +113,7 @@ function StockPage() {
     }
 
     return (
-        <div>
+        <PageContainer>
             <title>{symbol} - StoxTrack</title>
             <h1>{symbol} Page!</h1>
             <StockCard key={transactions.stockSymbol} transaction={transactions} onUpdate={loadData} exchangeRate={exchangeRate}/>
@@ -120,7 +121,7 @@ function StockPage() {
             <StockSummary todayGain={todayGain} totalGain={Number(transactions.gain.toFixed(4))} exchangeRate={exchangeRate}/>
             <br/>
             <PortfolioChart data={portfolio} onRangeChange={handleRangeChange} firstDate={transactions.buyDate} exchangeRate={exchangeRate}/>
-        </div>
+        </PageContainer>
     )
 }
 
