@@ -1,6 +1,7 @@
-import {LineChart, XAxis, YAxis, Tooltip, Line } from "recharts";
+import {LineChart, XAxis, YAxis, Tooltip, Line, ResponsiveContainer} from "recharts";
 import {useState} from "react";
 import {ONE_DAY} from "../../../src/backend/constants.ts";
+import Panel from "./Panel.tsx";
 
 interface PortfolioPoint {
     date: string;
@@ -25,7 +26,17 @@ function PortfolioChart({data, onRangeChange, firstDate, exchangeRate} : {data: 
     const convertedData = data.map(d =>({ ...d, value: (d.value * exchangeRate)}))
 
     return (
-        <div>
+        <Panel heightPer={"80%"} widthPer={"82%"}>
+            <div style={{display: "flex", justifyContent: "center", height: "100%", width: "100%"}}>
+                <ResponsiveContainer height="100%" width="100%" initialDimension={{ width: 1, height: 1 }}>
+                    <LineChart data={convertedData}>
+                        <XAxis dataKey="date"/>
+                        <YAxis dataKey="value" domain={['dataMin - 1', 'dataMax + 1']} tickFormatter={x => x.toFixed(4)}/>
+                        <Tooltip formatter={(value) => typeof value === "number" ? value.toFixed(4) : value} />
+                        <Line type="monotone" dataKey="value" stroke="#8884d8" color={"red"}/>
+                    </LineChart>
+                </ResponsiveContainer>
+            </div>
             <button onClick={() => {
                     onRangeChange(getClampedStartDate(new Date(Date.now()).toISOString().slice(0, 10)),todayDate)
             }}>Day</button>
@@ -86,18 +97,7 @@ function PortfolioChart({data, onRangeChange, firstDate, exchangeRate} : {data: 
                             onRangeChange(customFirstDate, customEndDate)}}>Confirm</button>
                 </div>
             )}
-
-            <div style={{display: "flex", justifyContent: "center"}}>
-                <LineChart width={1000} height={600} data={convertedData}>
-                    {/*<CartesianGrid />*/}
-                    <XAxis dataKey="date"/>
-                    <YAxis dataKey="value" domain={['dataMin - 1', 'dataMax + 1']} tickFormatter={x => x.toFixed(4)}/>
-                    <Tooltip formatter={(value) => typeof value === "number" ? value.toFixed(4) : value} />
-                    <Line type="monotone" dataKey="value" stroke="#8884d8"/>
-
-                </LineChart>
-            </div>
-        </div>
+        </Panel>
     )
 }
 

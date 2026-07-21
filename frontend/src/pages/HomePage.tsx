@@ -4,6 +4,7 @@ import PortfolioChart from "../components/PortfolioChart.tsx";
 import PortfolioSummary from "../components/PortfolioSummary.tsx";
 import {CurrencyContext} from "../App.tsx";
 import {ONE_DAY} from "../../../src/backend/constants.ts";
+import PageContainer from "../components/PageContainer.tsx";
 
 interface GroupedTransaction {
     stockSymbol: string
@@ -134,7 +135,7 @@ function HomePage() {
     }, [currency])
 
     return (
-        <div>
+        <PageContainer>
             <title>StoxTrack</title>
             <h1>StoxTrack</h1>
             <h2>Your Stocks</h2>
@@ -147,6 +148,7 @@ function HomePage() {
             <PortfolioSummary todayGain={todayGain} totalGain={Number(totalGain.toFixed(4))} todayBestStock={todayBestStock} totalBestStock={totalBestStock} exchangeRate={exchangeRate}/>
             <br/>
             <PortfolioChart data={portfolio} onRangeChange={handleRangeChange} firstDate={transactions[0]?.buyDate} exchangeRate={exchangeRate}/>
+            <br/>
             <br/>
             <button onClick={() => setShowBuyForm(!showBuyForm)}>Create new Investment</button>
             {showBuyForm && (
@@ -171,7 +173,7 @@ function HomePage() {
                     <button onClick={() => handleBuy()}>Confirm</button>
                 </div>
             )}
-        </div>
+        </PageContainer>
     )
 }
 

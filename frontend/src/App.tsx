@@ -3,6 +3,7 @@ import HomePage from "./pages/HomePage.tsx";
 import StockPage from "./pages/StockPage.tsx";
 import {createContext, useState, useEffect} from "react";
 import HamburgerMenu from "./components/HamburgerMenu.tsx";
+import PageContainer from "./components/PageContainer.tsx";
 
 interface CurrencyContextType {
     currency: string,
@@ -29,11 +30,13 @@ function App() {
     return (
         <CurrencyContext.Provider value={{currency, setCurrency}}>
             <LightModeContext.Provider value={{lightMode, setLightMode}}>
+                <PageContainer>
                 <HamburgerMenu/>
-                <Routes>
-                    <Route path="/" element={<HomePage />} />
-                    <Route path="/stock/:symbol" element={<StockPage />} />
-                </Routes>
+                    <Routes>
+                        <Route path="/" element={<HomePage />} />
+                        <Route path="/stock/:symbol" element={<StockPage />} />
+                    </Routes>
+                </PageContainer>
             </LightModeContext.Provider>
         </CurrencyContext.Provider>
     )
