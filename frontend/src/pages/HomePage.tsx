@@ -149,7 +149,6 @@ function HomePage() {
             <br/>
             <PortfolioChart data={portfolio} onRangeChange={handleRangeChange} firstDate={transactions[0]?.buyDate} exchangeRate={exchangeRate}/>
             <br/>
-            <br/>
             <button onClick={() => setShowBuyForm(!showBuyForm)}>Create new Investment</button>
             {showBuyForm && (
                 <div>
