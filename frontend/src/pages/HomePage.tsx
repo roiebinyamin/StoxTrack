@@ -36,6 +36,8 @@ function HomePage() {
     const {currency} = useContext(CurrencyContext);
     const [exchangeRate, setExchangeRate] = useState<number>(1);
 
+    const [currentValue, setCurrentValue] = useState<number>(0);
+
     async function loadData() {
         const response = await fetch('/api/groupedTransactions');
         const data = await response.json();
@@ -84,15 +86,22 @@ function HomePage() {
         setExchangeRate(data);
     }
 
+    async function loadCurrentValue() {
+        const response = await fetch(`/api/currentPortfolioValue`);
+        const data = await response.json();
+        setCurrentValue(data);
+    }
+
     function handleRangeChange(startDate: string, endDate: string) {
         setStartDate(startDate);
         setEndDate(endDate);
     }
 
     async function setEverything(){
-        await loadData();
+        await loadCurrentValue();
         await loadTodayGain();
         await loadTotalGain();
+        await loadData();
         await loadTodayBestStock();
         await loadTotalBestStock();
     }
@@ -144,11 +153,10 @@ function HomePage() {
                     <Link to={`/stock/${t.stockSymbol}`}>{t.stockSymbol}</Link>
                 </div>
             ))}
-            <br/>
-            <PortfolioChart data={portfolio} onRangeChange={handleRangeChange} firstDate={transactions[0]?.buyDate} exchangeRate={exchangeRate}/>
-            <PortfolioSummary todayGain={todayGain} totalGain={Number(totalGain.toFixed(4))} todayBestStock={todayBestStock} totalBestStock={totalBestStock} exchangeRate={exchangeRate}/>
-            <br/>
-            <br/>
+            <div style={{height:"100%", width: "100%", display:"flex", justifyContent:"space-between"}}>
+                <PortfolioChart data={portfolio} onRangeChange={handleRangeChange} firstDate={transactions[0]?.buyDate} exchangeRate={exchangeRate}/>
+                <PortfolioSummary todayGain={todayGain} totalGain={totalGain} todayBestStock={todayBestStock} totalBestStock={totalBestStock} currentValue={currentValue} exchangeRate={exchangeRate}/>
+            </div>
             <button onClick={() => setShowBuyForm(!showBuyForm)}>Create new Investment</button>
             {showBuyForm && (
                 <div>

@@ -26,7 +26,7 @@ function PortfolioChart({data, onRangeChange, firstDate, exchangeRate} : {data: 
     const convertedData = data.map(d =>({ ...d, value: (d.value * exchangeRate)}))
 
     return (
-        <Panel heightPer={"80%"} widthPer={"82%"}>
+        <Panel heightPer={"80%"} widthPer={"90%"}>
             <div style={{display: "flex", justifyContent: "center", height: "100%", width: "100%"}}>
                 <ResponsiveContainer height="100%" width="100%" initialDimension={{ width: 1, height: 1 }}>
                     <LineChart data={convertedData}>

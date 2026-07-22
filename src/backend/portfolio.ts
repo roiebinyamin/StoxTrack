@@ -250,7 +250,7 @@ export async function getTodayBestStock(){
     const transactions = getTransactions();
     const stockSymbols = Array.from(new Set(transactions.map(t => t.stockSymbol)));
     let bestGain = 0;
-    let bestStock = "no stock has earned any money today";
+    let bestStock = "N/A";
     for (const stockSymbol of stockSymbols) {
         let gain = await getTodayStockGain(stockSymbol);
         if (gain > bestGain){
@@ -273,6 +273,19 @@ export async function getTotalBestStock(){
         }
     }
     return bestStock;
+}
+
+export async function getCurrentPortfolioValue(){
+    const transactions = getTransactions();
+    const stockSymbols = Array.from(new Set(transactions.map(t => t.stockSymbol)));
+    let totalValue = 0;
+    for (const stockSymbol of stockSymbols) {
+        let shares = getPortfolioShares(transactions.filter(t => t.stockSymbol == stockSymbol));
+        let price = await getCurrentStockPrice(stockSymbol);
+        if (price)
+            totalValue += shares[stockSymbol]! * price;
+    }
+    return totalValue;
 }
 
 //stock functions
@@ -338,4 +351,13 @@ export async function getTodayStockGain(stockSymbol: string){
             return 0;
         return Number((sharesHeld * (todayPrice - yesterdayPrice.close!)));
     }
+}
+
+export async function getCurrentStockValue(stockSymbol: string){
+    const transactions = getTransactionBySymbol(stockSymbol);
+    const sharesHeld = getStockShares(transactions);
+    const price = await getCurrentStockPrice(stockSymbol);
+    if (!price)
+        throw new Error("No price found");
+    return sharesHeld * price;
 }

@@ -18,7 +18,7 @@ import {
     getTotalPortfolioGain,
     getTodayBestStock,
     getTotalBestStock,
-    getCurrencyExchangeRate
+    getCurrencyExchangeRate, getCurrentPortfolioValue, getCurrentStockValue
 } from "./portfolio.js";
 
 const app = express();
@@ -112,6 +112,16 @@ app.get('/api/totalBestStock', async (req, res) => {
 app.get('/api/currencyExchangeRate/:currency', async (req, res) => {
     try {res.json(await getCurrencyExchangeRate(req.params.currency));}
     catch (e) {res.status(404).json({error: "Currency not found"})}
+})
+
+app.get('/api/currentPortfolioValue', async (req, res) => {
+    try {res.json(await getCurrentPortfolioValue())}
+    catch (e) {res.status(404).json({error: "stock price not found"})}
+})
+
+app.get('/api/currentStockValue/:symbol', async (req, res) => {
+    try {res.json(await getCurrentStockValue(req.params.symbol));}
+    catch (e) {res.status(404).json({error: "stock price not found"})}
 })
 
 app.listen(port, ()=>{

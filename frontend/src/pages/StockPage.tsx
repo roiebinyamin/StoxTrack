@@ -36,6 +36,8 @@ function StockPage() {
     const {currency} = useContext(CurrencyContext);
     const [exchangeRate, setExchangeRate] = useState<number>(1);
 
+    const [currentValue, setCurrentValue] = useState<number>(0);
+
     async function loadData() {
         const response = await fetch(`/api/groupedTransactions/${symbol}`);
         if (response.status === 404) {
@@ -64,6 +66,12 @@ function StockPage() {
         setTodayGain(data);
     }
 
+    async function loadCurrentValue() {
+        const response = await fetch(`/api/currentStockValue/${symbol}`);
+        const data = await response.json();
+        setCurrentValue(data);
+    }
+
     async function updateExchangeRate() {
         const response = await fetch(`/api/currencyExchangeRate/${currency}`);
         const data = await response.json();
@@ -75,9 +83,14 @@ function StockPage() {
         setEndDate(endDate);
     }
 
+    async function setEverything(){
+        await loadCurrentValue();
+        await loadTodayGain();
+        await loadData();
+    }
+
     useEffect(()=> {
-        loadData()
-        loadTodayGain()
+        setEverything();
     }, [])
 
     useEffect(()=> {
@@ -118,8 +131,10 @@ function StockPage() {
             <h1>{symbol} Page!</h1>
             <StockCard key={transactions.stockSymbol} transaction={transactions} onUpdate={loadData} exchangeRate={exchangeRate}/>
             <br/>
-            <PortfolioChart data={portfolio} onRangeChange={handleRangeChange} firstDate={transactions.buyDate} exchangeRate={exchangeRate}/>
-            <StockSummary todayGain={todayGain} totalGain={Number(transactions.gain.toFixed(4))} exchangeRate={exchangeRate}/>
+            <div style={{height:"100%", width: "100%", display:"flex", justifyContent:"space-between"}}>
+                <PortfolioChart data={portfolio} onRangeChange={handleRangeChange} firstDate={transactions.buyDate} exchangeRate={exchangeRate}/>
+                <StockSummary todayGain={todayGain} totalGain={Number(transactions.gain.toFixed(4))} currentValue={currentValue} exchangeRate={exchangeRate}/>
+            </div>
         </PageContainer>
     )
 }
