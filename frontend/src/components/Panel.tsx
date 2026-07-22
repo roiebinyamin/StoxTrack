@@ -1,7 +1,7 @@
 import  {useContext ,type ReactNode} from 'react';
 import {LightModeContext} from "../App.tsx";
 
-function Panel({children, heightPer, widthPer}: {children: ReactNode, heightPer: string, widthPer: string}) {
+function Panel({children, heightPer, widthPer, color}: {children: ReactNode, heightPer: string, widthPer: string, color?: string}) {
     const lightMode = useContext(LightModeContext);
 
     if (!lightMode.lightMode) {
@@ -9,11 +9,12 @@ function Panel({children, heightPer, widthPer}: {children: ReactNode, heightPer:
             <div style={{
                 height: heightPer,
                 width: widthPer,
-                backgroundColor: "#212121",
+                backgroundColor: color? color : "#212121",
                 borderRadius: "1%",
-                padding: "1%",
+                padding: "0.25%",
                 borderColor: "#1e1e1f",
-                borderStyle: "solid"
+                borderStyle: "solid",
+
             }}>
                 {children}
             </div>
