@@ -110,9 +110,9 @@ function StockPage() {
 
     if (notFound) {
         return (
-            <div>
+            <div style={{display: "flex", justifyContent: "center", fontSize:"200%"}}>
                 <title>StoxTrack - not found stock!</title>
-                <h1 style={{color:"red", lineHeight:"1.5"}}>User does not have any transactions for this stock symbol/ Stock symbol not found</h1>
+                <h1 style={{color:"red", lineHeight:"1.5"}}>Error 404: No data was found about this transaction</h1>
             </div>
         )
     }
