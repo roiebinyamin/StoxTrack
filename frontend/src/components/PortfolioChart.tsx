@@ -1,6 +1,6 @@
 import {LineChart, XAxis, YAxis, Tooltip, Line, ResponsiveContainer} from "recharts";
 import {useState} from "react";
-import {ONE_DAY} from "../../../src/backend/constants.ts";
+import {ONE_DAY, TO_FIXED_NUM} from "../../../src/backend/constants.ts";
 import Panel from "./Panel.tsx";
 
 interface PortfolioPoint {
@@ -31,8 +31,8 @@ function PortfolioChart({data, onRangeChange, firstDate, exchangeRate} : {data: 
                 <ResponsiveContainer height="100%" width="100%" initialDimension={{ width: 1, height: 1 }}>
                     <LineChart data={convertedData}>
                         <XAxis dataKey="date"/>
-                        <YAxis dataKey="value" domain={['dataMin - 1', 'dataMax + 1']} tickFormatter={x => x.toFixed(4)}/>
-                        <Tooltip formatter={(value) => typeof value === "number" ? value.toFixed(4) : value} />
+                        <YAxis dataKey="value" domain={['dataMin - 1', 'dataMax + 1']} tickFormatter={x => x.toFixed(TO_FIXED_NUM)}/>
+                        <Tooltip formatter={(value) => typeof value === "number" ? value.toFixed(TO_FIXED_NUM) : value} />
                         <Line type="monotone" dataKey="value" stroke="#8884d8" color={"red"}/>
                     </LineChart>
                 </ResponsiveContainer>

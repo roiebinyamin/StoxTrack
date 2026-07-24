@@ -127,13 +127,12 @@ function StockPage() {
 
     return (
         <PageContainer>
-            <title>{symbol} - StoxTrack</title>
             <h1>{symbol} Page!</h1>
             <StockCard key={transactions.stockSymbol} transaction={transactions} onUpdate={loadData} exchangeRate={exchangeRate}/>
             <br/>
             <div style={{height:"100%", width: "100%", display:"flex", justifyContent:"space-between"}}>
                 <PortfolioChart data={portfolio} onRangeChange={handleRangeChange} firstDate={transactions.buyDate} exchangeRate={exchangeRate}/>
-                <StockSummary todayGain={todayGain} totalGain={Number(transactions.gain.toFixed(4))} currentValue={currentValue} exchangeRate={exchangeRate}/>
+                <StockSummary todayGain={todayGain} totalGain={transactions.gain} currentValue={currentValue} exchangeRate={exchangeRate}/>
             </div>
         </PageContainer>
     )

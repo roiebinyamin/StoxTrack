@@ -1,5 +1,6 @@
 import {useState} from "react";
 import React from "react";
+import {TO_FIXED_NUM} from "../../../src/backend/constants.ts";
 
 interface GroupedTransaction {
     stockSymbol: string
@@ -114,8 +115,8 @@ function StockCard({transaction, onUpdate, exchangeRate}: StockCardProps) {
         <>
             <div>
             <h2>{transaction.stockSymbol}</h2>
-            <p>Shares owned: {transaction.amount.toFixed(4)}, Total money invested: {(Number(transaction.totalInvested) * exchangeRate).toFixed(4)}, Start of investing: {transaction.buyDate}</p>
-            <p>Current money: {(Number(transaction.currentValue) * exchangeRate).toFixed(4)}, Total money sold: {(transaction.totalSold * exchangeRate).toFixed(4)}, Total gain: {(transaction.gain * exchangeRate).toFixed(4)}</p>
+            <p>Shares owned: {transaction.amount.toFixed(TO_FIXED_NUM)}, Total money invested: {(Number(transaction.totalInvested) * exchangeRate).toFixed(TO_FIXED_NUM)}, Start of investing: {transaction.buyDate}</p>
+            <p>Current money: {(Number(transaction.currentValue) * exchangeRate).toFixed(TO_FIXED_NUM)}, Total money sold: {(transaction.totalSold * exchangeRate).toFixed(TO_FIXED_NUM)}</p>
             <button onClick={() => {setShowBuyForm(!showBuyForm);setShowSellForm(false);setShowHistory(false)}}>Buy</button>
             {showBuyForm && (
                 <div>
@@ -156,10 +157,10 @@ function StockCard({transaction, onUpdate, exchangeRate}: StockCardProps) {
                     {history.map(t => (
                         <React.Fragment key={`${t.id}-${t.type}`}>
                             {t.type == "buy" &&
-                                <p style={{color:"limegreen"}}>{t.date} - {t.amount.toFixed(4)} shares of {transaction.stockSymbol} was bought at {t.price.toFixed(4)} for {(t.amount * t.price).toFixed(4)}</p>
+                                <p style={{color:"limegreen"}}>{t.date} - {t.amount.toFixed(TO_FIXED_NUM)} shares of {transaction.stockSymbol} was bought at {t.price.toFixed(TO_FIXED_NUM)} for {(t.amount * t.price).toFixed(TO_FIXED_NUM)}</p>
                             }
                             {t.type == "sell" &&
-                                <p style={{color:"red"}}>{t.date} - {t.amount.toFixed(4)} shares of {transaction.stockSymbol} was sold at {t.price.toFixed(4)} for {(t.amount * t.price).toFixed(4)}</p>
+                                <p style={{color:"red"}}>{t.date} - {t.amount.toFixed(TO_FIXED_NUM)} shares of {transaction.stockSymbol} was sold at {t.price.toFixed(TO_FIXED_NUM)} for {(t.amount * t.price).toFixed(TO_FIXED_NUM)}</p>
                             }
                             <button onClick={() => {setUpdateId(t.id);setUpdateType(t.type);setUpdatedAmount(t.amount);setUpdatedDate(t.date)}}>Update</button>
                             {updateId === t.id && t.type === updateType &&(
