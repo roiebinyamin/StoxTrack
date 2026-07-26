@@ -1,10 +1,11 @@
 import {useEffect, useState, useContext} from "react"
-import {Link} from "react-router-dom"
 import PortfolioChart from "../components/PortfolioChart.tsx";
 import PortfolioSummary from "../components/PortfolioSummary.tsx";
 import {CurrencyContext} from "../App.tsx";
 import {ONE_DAY} from "../../../src/backend/constants.ts";
 import PageContainer from "../components/PageContainer.tsx";
+import StockList from "../components/StockList.tsx";
+import Panel from "../components/Panel.tsx";
 
 interface GroupedTransaction {
     stockSymbol: string
@@ -37,6 +38,8 @@ function HomePage() {
     const [exchangeRate, setExchangeRate] = useState<number>(1);
 
     const [currentValue, setCurrentValue] = useState<number>(0);
+
+    const stockSymbols = transactions.map(t => t.stockSymbol);
 
     async function loadData() {
         const response = await fetch('/api/groupedTransactions');
@@ -146,40 +149,41 @@ function HomePage() {
     return (
         <PageContainer>
             <title>StoxTrack</title>
-            <h1>StoxTrack</h1>
-            <h2>Your Stocks</h2>
-            {transactions.map(t => (
-                <div>
-                    <Link to={`/stock/${t.stockSymbol}`}>{t.stockSymbol}</Link>
-                </div>
-            ))}
+            <h1 style={{display:"flex", justifyContent:"center"}}>StoxTrack</h1>
             <div style={{height:"100%", width: "100%", display:"flex", justifyContent:"space-between"}}>
                 <PortfolioChart data={portfolio} onRangeChange={handleRangeChange} firstDate={transactions[0]?.buyDate} exchangeRate={exchangeRate}/>
-                <PortfolioSummary todayGain={todayGain} totalGain={totalGain} todayBestStock={todayBestStock} totalBestStock={totalBestStock} currentValue={currentValue} exchangeRate={exchangeRate}/>
-            </div>
-            <button onClick={() => setShowBuyForm(!showBuyForm)}>Create new Investment</button>
-            {showBuyForm && (
-                <div>
-                    <input
-                        type="number"
-                        placeholder="Amount of shares"
-                        value={buyAmount}
-                        onChange={(e) =>setBuyAmount(Number(e.target.value))}
-                    />
-                    <input
-                        type="date"
-                        value={buyDate}
-                        onChange={(e) =>setBuyDate(e.target.value)}
-                    />
-                    <input
-                        type="text"
-                        placeholder="Stock symbol"
-                        value={stockSymbol}
-                        onChange={(e) =>setStockSymbol(e.target.value)}
-                    />
-                    <button onClick={() => handleBuy()}>Confirm</button>
+                <div style={{height: "100%", width: "10%"}}>
+                    <PortfolioSummary todayGain={todayGain} totalGain={totalGain} todayBestStock={todayBestStock} totalBestStock={totalBestStock} currentValue={currentValue} exchangeRate={exchangeRate}/>
+                    <Panel heightPer={"55%"} widthPer={"100%"}>
+                        <StockList stocksSymbols={stockSymbols}/>
+                        <div style={{height: "10%" ,display:"flex", justifyContent:"center", alignItems: "center", top: "50%"}}>
+                            <button onClick={() => setShowBuyForm(!showBuyForm)}>Create new Investment</button>
+                        </div>
+                            {showBuyForm && (
+                            <div>
+                                <input
+                                    type="number"
+                                    placeholder="Amount of shares"
+                                    value={buyAmount}
+                                    onChange={(e) =>setBuyAmount(Number(e.target.value))}
+                                />
+                                <input
+                                    type="date"
+                                    value={buyDate}
+                                    onChange={(e) =>setBuyDate(e.target.value)}
+                                />
+                                <input
+                                    type="text"
+                                    placeholder="Stock symbol"
+                                    value={stockSymbol}
+                                    onChange={(e) =>setStockSymbol(e.target.value)}
+                                />
+                                <button onClick={() => handleBuy()}>Confirm</button>
+                            </div>
+                        )}
+                    </Panel>
                 </div>
-            )}
+            </div>
         </PageContainer>
     )
 }
