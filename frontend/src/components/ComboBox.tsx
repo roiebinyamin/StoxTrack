@@ -25,7 +25,7 @@ function ComboBox({options, onSelect, alwaysShow, currentOption}:{options: strin
         <div style={{height:"90%", width:"100%"}} ref={boxRef}>
             <input
             type="text"
-            placeholder={alwaysShow ? currentOption : ""}
+            placeholder={currentOption ? currentOption : ""}
             onClick={() => setIsOpen(true)}
             onChange={(e) => {setTextWritten((e.target.value).toUpperCase())}}
             />

@@ -1,5 +1,6 @@
 import {useState, useContext} from 'react';
 import {CurrencyContext, LightModeContext} from "../App.tsx";
+import ComboBox from "./ComboBox.tsx";
 
 function HamburgerMenu() {
     const [showMenu, setShowMenu] = useState(false);
@@ -16,11 +17,7 @@ function HamburgerMenu() {
             </div>
             {showMenu && (
                 <div>
-                    <select value={currency} onChange={(e) => setCurrency(e.target.value)}>
-                        {currencies.map(c => (
-                            <option key={c} value={c}>{c}</option>
-                        ))}
-                    </select>
+                    <ComboBox options={currencies} onSelect={(result) => setCurrency(result)} currentOption={currency}/>
                     <button onClick={() => setLightMode(!lightMode)}>{lightMode ? "Dark Mode" : "Light Mode"}</button>
                 </div>
             )}
