@@ -1,6 +1,7 @@
 import {useState, useContext} from 'react';
 import {CurrencyContext, LightModeContext} from "../App.tsx";
 import ComboBox from "./ComboBox.tsx";
+import PopOutMenu from "./PopOutMenu.tsx";
 
 function HamburgerMenu() {
     const [showMenu, setShowMenu] = useState(false);
@@ -16,10 +17,10 @@ function HamburgerMenu() {
                 <button onClick={() => setShowMenu(!showMenu)}>☰</button>
             </div>
             {showMenu && (
-                <div>
+                <PopOutMenu onClose={() => setShowMenu(false)}>
                     <ComboBox options={currencies} onSelect={(result) => setCurrency(result)} currentOption={currency}/>
                     <button onClick={() => setLightMode(!lightMode)}>{lightMode ? "Dark Mode" : "Light Mode"}</button>
-                </div>
+                </PopOutMenu>
             )}
         </div>
     )
