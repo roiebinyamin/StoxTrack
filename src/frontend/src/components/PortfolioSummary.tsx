@@ -1,5 +1,5 @@
 import Panel from "./Panel.tsx";
-import {TO_FIXED_NUM} from "../../../src/backend/constants.ts";
+import {TO_FIXED_NUM} from "../../../backend/constants.ts";
 
 function getColorBasedOnGain(gain: number) {
     if (gain > 0) {

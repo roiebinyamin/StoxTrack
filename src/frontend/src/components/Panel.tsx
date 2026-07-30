@@ -26,7 +26,7 @@ function Panel({children, heightPer, widthPer, color, display, onClick}: {childr
             <div style={{
                 height: heightPer,
                 width: widthPer,
-                backgroundColor: color? color : "#d0d3d6",
+                backgroundColor: color? color : "#C7C7C7",
                 borderRadius: "1%",
                 padding: "1%",
                 borderColor: "#c2c4c6",

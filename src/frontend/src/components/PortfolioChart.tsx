@@ -1,6 +1,6 @@
 import {LineChart, XAxis, YAxis, Tooltip, Line, ResponsiveContainer} from "recharts";
 import {useState} from "react";
-import {ONE_DAY, TO_FIXED_NUM} from "../../../src/backend/constants.ts";
+import {ONE_DAY, TO_FIXED_NUM} from "../../../backend/constants.ts";
 import Panel from "./Panel.tsx";
 
 interface PortfolioPoint {

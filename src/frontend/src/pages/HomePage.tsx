@@ -2,7 +2,7 @@ import {useEffect, useState, useContext} from "react"
 import PortfolioChart from "../components/PortfolioChart.tsx";
 import PortfolioSummary from "../components/PortfolioSummary.tsx";
 import {CurrencyContext} from "../App.tsx";
-import {ONE_DAY} from "../../../src/backend/constants.ts";
+import {ONE_DAY} from "../../../backend/constants.ts";
 import PageContainer from "../components/PageContainer.tsx";
 import StockList from "../components/StockList.tsx";
 import Panel from "../components/Panel.tsx";

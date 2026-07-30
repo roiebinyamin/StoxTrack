@@ -4,7 +4,7 @@ import StockCard from "../components/StockCard.tsx";
 import PortfolioChart from "../components/PortfolioChart.tsx";
 import StockSummary from "../components/StockSummary.tsx";
 import {CurrencyContext} from "../App.tsx";
-import {ONE_DAY} from "../../../src/backend/constants.ts";
+import {ONE_DAY} from "../../../backend/constants.ts";
 import PageContainer from "../components/PageContainer.tsx";
 
 interface GroupedTransaction {
